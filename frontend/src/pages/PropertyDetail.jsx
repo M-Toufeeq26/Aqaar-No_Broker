@@ -49,6 +49,16 @@ const PropertyDetail = () => {
   const timerRef = useRef(null)
   const viewTrackedRef = useRef(false)
 
+  // Helper function to check if user is admin
+  const isAdmin = () => {
+    if (!user) return false
+    return user.role === 'admin' || 
+           user.role === 'Admin' || 
+           user.is_admin === true || 
+           user.user_type === 'admin' ||
+           user.type === 'admin'
+  }
+
   // Check if property is verified and sponsored (for button states)
   const isVerified = property?.is_verified === true || property?.is_verified === 1
   const isSponsored = property?.is_sponsored === true || property?.is_sponsored === 1
@@ -340,7 +350,9 @@ const PropertyDetail = () => {
   }
 
   const handleOpenDocument = (url) => {
-    window.open(`http://localhost:8000${url}`, '_blank')
+    // Fix backslashes to forward slashes for URL
+    const fixedUrl = url.replace(/\\/g, '/')
+    window.open(`http://localhost:8000${fixedUrl}`, '_blank')
   }
 
   const handleSubmitRating = async () => {
@@ -618,6 +630,7 @@ const PropertyDetail = () => {
   const avgRating = calculateAverageRating()
   const canRequestVerification = isOwner && !isVerified
   const canRequestSponsorship = isOwner && !isSponsoredActive
+  const admin = isAdmin()
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -684,23 +697,26 @@ const PropertyDetail = () => {
                   {property.location_address && <span>• {property.location_address}</span>}
                 </div>
               </div>
-              <div className="flex gap-2">
-                {!isOwner && isLoggedIn && !hasReported && (
-                  <button
-                    onClick={() => setShowReportModal(true)}
-                    className="text-gray-400 hover:text-red-500 transition text-xl"
-                    title="Report this property"
-                  >
-                    🚩
+              {/* Report and Wishlist - Hidden for Admin */}
+              {!admin && (
+                <div className="flex gap-2">
+                  {!isOwner && isLoggedIn && !hasReported && (
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className="text-gray-400 hover:text-red-500 transition text-xl"
+                      title="Report this property"
+                    >
+                      🚩
+                    </button>
+                  )}
+                  {!isOwner && isLoggedIn && hasReported && (
+                    <span className="text-gray-400 text-sm" title="Already reported">✓ Reported</span>
+                  )}
+                  <button onClick={handleWishlist} className={`text-3xl transition-transform hover:scale-110 ${inWishlist ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}`}>
+                    {inWishlist ? '❤️' : '🤍'}
                   </button>
-                )}
-                {!isOwner && isLoggedIn && hasReported && (
-                  <span className="text-gray-400 text-sm" title="Already reported">✓ Reported</span>
-                )}
-                <button onClick={handleWishlist} className={`text-3xl transition-transform hover:scale-110 ${inWishlist ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}`}>
-                  {inWishlist ? '❤️' : '🤍'}
-                </button>
-              </div>
+                </div>
+              )}
             </div>
             <div className="mt-4 flex items-center gap-3 flex-wrap">
               <span className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>₹{property.price?.toLocaleString()}</span>
@@ -882,7 +898,8 @@ const PropertyDetail = () => {
               </div>
             )}
 
-            {!isOwner && property.status !== 'sold' && (
+            {/* I'm Interested Button - Hidden for Admin */}
+            {!admin && !isOwner && property.status !== 'sold' && (
               <>
                 {isLoggedIn ? (
                   <button
@@ -913,8 +930,30 @@ const PropertyDetail = () => {
             )}
           </div>
 
-          {/* Documents Section */}
-          {canViewDocuments() && allDocs.length > 0 && (
+          {/* Admin Documents Section - Uses documents state with correct API fields */}
+          {admin && documents.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
+                <span>📄</span> Property Documents (Admin Access)
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {documents.map((doc) => (
+                  <button
+                    key={doc.id}
+                    onClick={() => handleOpenDocument(doc.document_url)}
+                    className="w-full py-3 px-3 bg-gray-50 rounded-xl text-sm text-left hover:bg-emerald-100 transition border border-gray-200 flex items-center gap-2"
+                  >
+                    <span className="text-xl">📄</span>
+                    <span className="truncate flex-1">{doc.original_filename || doc.document_label || `Document ${doc.id}`}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Documents Section - For normal users with access */}
+          {!admin && canViewDocuments() && allDocs.length > 0 && (
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
                 <span>📄</span> Property Documents
@@ -970,8 +1009,8 @@ const PropertyDetail = () => {
             </div>
           )}
 
-          {/* Document Request Button */}
-          {!isOwner && isLoggedIn && !hasApprovedDocumentRequest && !canViewDocuments() && (
+          {/* Document Request Button - Hidden for Admin */}
+          {!admin && !isOwner && isLoggedIn && !hasApprovedDocumentRequest && !canViewDocuments() && (
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
                 <span>📄</span> Property Documents

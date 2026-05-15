@@ -146,15 +146,8 @@ const Login = () => {
             {isLogin ? 'Sign Up' : 'Login'}
           </button>
         </div>
-
-        {isLogin && (
-          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-            <p className="font-medium text-gray-700 text-sm mb-2">✨ Demo Credentials:</p>
-            <p className="text-xs text-gray-600">Admin: <span className="font-mono">admin@admin.com</span> / <span className="font-mono">admin123</span></p>
-            <p className="text-xs text-gray-600 mt-1">Register a new account to test buyer/seller features</p>
-          </div>
-        )}
       </div>
+      
     </div>
   )
 }

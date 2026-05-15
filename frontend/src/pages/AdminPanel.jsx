@@ -625,7 +625,7 @@ const AdminPanel = () => {
                           <td className="px-4 py-3 text-sm text-gray-300">{p.views_count || 0}</td>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex gap-2">
-                              <button onClick={() => window.open(`/property/${p.id}`, '_blank')} className="text-blue-400 hover:text-blue-300 text-xs">View</button>
+                              <button onClick={() => window.open(`${window.location.origin}/property/${p.id}`, '_blank')} className="text-blue-400 hover:text-blue-300 text-xs">View</button>
                               <button onClick={() => handleDeleteProperty(p.id, p.title)} className="text-red-400 hover:text-red-300 text-xs">Delete</button>
                             </div>
                           </td>

@@ -27,12 +27,13 @@ function AppContent() {
     )
   }
 
-  // Admin routes - completely separate from user layout
+  // Admin routes
   if (isAdmin) {
     return (
       <Routes>
         <Route path="/" element={<AdminPanel />} />
         <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
+        <Route path="/property/:id" element={<PropertyDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
