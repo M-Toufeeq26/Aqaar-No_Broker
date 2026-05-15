@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, between
 from typing import Optional, List
@@ -836,6 +836,7 @@ def get_all_views(
 @router.post("/{property_id}/interest")
 def mark_interest(
     property_id: int,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -880,6 +881,13 @@ def mark_interest(
             db.add(notification)
             db.commit()
             
+            from app.websockets import manager
+            background_tasks.add_task(
+                manager.send_personal_message,
+                {"type": "new_notification", "data": {"title": notification.title, "message": notification.message}},
+                property.owner_id
+            )
+            
             return {"message": "Interest request sent. Seller has 3 days to respond.", "interest_id": new_interest.id}
         
         elif existing.status == "pending":
@@ -911,6 +919,13 @@ def mark_interest(
     )
     db.add(notification)
     db.commit()
+    
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "new_notification", "data": {"title": notification.title, "message": notification.message}},
+        property.owner_id
+    )
     
     return {"message": "Interest request sent. Seller has 3 days to respond.", "interest_id": interest.id}
 
@@ -981,6 +996,7 @@ def get_pending_interests(
 @router.put("/interests/{interest_id}/approve")
 def approve_interest(
     interest_id: int,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -1010,11 +1026,19 @@ def approve_interest(
     db.add(notification)
     db.commit()
     
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "interest_approved", "data": {"title": notification.title, "message": notification.message}},
+        interest.user_id
+    )
+    
     return {"message": "Interest approved successfully"}
 
 @router.put("/interests/{interest_id}/reject")
 def reject_interest(
     interest_id: int,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -1052,4 +1076,75 @@ def reject_interest(
     db.add(notification)
     db.commit()
     
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "interest_rejected", "data": {"title": notification.title, "message": notification.message}},
+        interest.user_id
+    )
+    
     return {"message": "Interest rejected successfully"}
+
+@router.get("/{property_id}/verification-status")
+def get_verification_status(
+    property_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    property = db.query(models.Property).filter(models.Property.id == property_id).first()
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    latest_request = db.query(models.PropertyVerificationRequest).filter(
+        models.PropertyVerificationRequest.property_id == property_id
+    ).order_by(models.PropertyVerificationRequest.created_at.desc()).first()
+    
+    is_verified = property.is_verified
+    verified_until = property.verified_until
+    
+    if not latest_request:
+        return {
+            "has_pending_request": False,
+            "is_verified": is_verified,
+            "verified_until": verified_until,
+            "remaining_attempts": property.verification_chances_remaining,
+            "last_rejection_reason": None
+        }
+        
+    return {
+        "has_pending_request": latest_request.status == "pending",
+        "is_verified": is_verified,
+        "verified_until": verified_until,
+        "remaining_attempts": latest_request.remaining_attempts,
+        "last_rejection_reason": latest_request.admin_comment if latest_request.status == "rejected" else None
+    }
+
+@router.get("/{property_id}/sponsorship-status")
+def get_sponsorship_status(
+    property_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    property = db.query(models.Property).filter(models.Property.id == property_id).first()
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    latest_request = db.query(models.SponsorshipRequest).filter(
+        models.SponsorshipRequest.property_id == property_id
+    ).order_by(models.SponsorshipRequest.created_at.desc()).first()
+    
+    is_sponsored = property.is_sponsored
+    sponsored_until = property.sponsored_until
+    
+    if not latest_request:
+        return {
+            "has_pending_request": False,
+            "is_sponsored": is_sponsored,
+            "sponsored_until": sponsored_until
+        }
+        
+    return {
+        "has_pending_request": latest_request.status == "pending",
+        "is_sponsored": is_sponsored,
+        "sponsored_until": sponsored_until
+    }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func
 from app.database import get_db
@@ -66,6 +66,7 @@ def get_messages(
 @router.post("/send")
 def send_message(
     message_data: ChatMessageCreate,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -110,6 +111,23 @@ def send_message(
     db.add(notification)
     db.commit()
     
+    from app.websockets import manager
+    
+    msg_dict = {
+        "id": new_message.id,
+        "sender_id": new_message.sender_id,
+        "receiver_id": new_message.receiver_id,
+        "message": new_message.message,
+        "is_read": new_message.is_read,
+        "created_at": new_message.created_at.isoformat()
+    }
+    
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "new_chat_message", "data": msg_dict},
+        message_data.receiver_id
+    )
+    
     return ChatMessageResponse(
         id=new_message.id,
         sender_id=new_message.sender_id,
@@ -124,9 +142,6 @@ def get_conversations(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Get all distinct users that current_user has exchanged messages with
-    # (regardless of interest status, because once a message is sent, it's a conversation)
-    
     # Find all unique sender/receiver pairs involving current user
     sent_to = db.query(models.ChatMessage.receiver_id).filter(
         models.ChatMessage.sender_id == current_user.id
@@ -140,6 +155,35 @@ def get_conversations(
         user_ids.add(uid)
     for (uid,) in received_from:
         user_ids.add(uid)
+        
+    contact_property_map = {}
+
+    # Find users with whom there is an approved interest
+    # 1. As buyer (current user requested interest, owner of property is contact)
+    buyer_interests = db.query(models.PropertyInterest, models.Property).join(
+        models.Property, models.PropertyInterest.property_id == models.Property.id
+    ).filter(
+        models.PropertyInterest.user_id == current_user.id,
+        models.PropertyInterest.status.ilike("approved")
+    ).all()
+    
+    # 2. As seller (current user owns property, buyer is contact)
+    seller_interests = db.query(models.PropertyInterest).join(
+        models.Property, models.PropertyInterest.property_id == models.Property.id
+    ).filter(
+        models.Property.owner_id == current_user.id,
+        models.PropertyInterest.status.ilike("approved")
+    ).all()
+
+    for interest, property_obj in buyer_interests:
+        user_ids.add(property_obj.owner_id)
+        if property_obj.owner_id not in contact_property_map:
+            contact_property_map[property_obj.owner_id] = property_obj.id
+
+    for interest in seller_interests:
+        user_ids.add(interest.user_id)
+        if interest.user_id not in contact_property_map:
+            contact_property_map[interest.user_id] = interest.property_id
     
     result = []
     for contact_id in user_ids:
@@ -169,7 +213,7 @@ def get_conversations(
                     (models.ChatMessage.sender_id == contact_id) & (models.ChatMessage.receiver_id == current_user.id)
                 )
             ).first()
-            property_id = first_message.property_id if first_message else None
+            property_id = first_message.property_id if first_message else contact_property_map.get(contact_id)
             
             result.append({
                 "user_id": other_user.id,

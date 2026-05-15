@@ -91,8 +91,8 @@ const PropertyVerificationPanel = () => {
     return (
       <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700">
         <div className="text-6xl mb-4">✅</div>
-        <p className="text-gray-400 text-lg">No pending property verification requests.</p>
-        <p className="text-sm text-gray-500 mt-2">When sellers request verification, they will appear here.</p>
+        <p className="text-[var(--color-text-muted)] text-lg">No pending property verification requests.</p>
+        <p className="text-sm text-[var(--color-text-muted)] mt-2">When sellers request verification, they will appear here.</p>
       </div>
     )
   }
@@ -103,7 +103,7 @@ const PropertyVerificationPanel = () => {
         <h2 className="text-xl font-semibold text-white">Property Verification Requests</h2>
         <button
           onClick={fetchRequests}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-[var(--color-text-muted)] hover:text-white transition-colors"
         >
           🔄 Refresh
         </button>
@@ -121,21 +121,21 @@ const PropertyVerificationPanel = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm">
                   <div>
-                    <p className="text-gray-500">Owner</p>
+                    <p className="text-[var(--color-text-muted)]">Owner</p>
                     <p className="text-white">{req.user_name}</p>
-                    <p className="text-gray-400 text-xs">{req.user_email}</p>
+                    <p className="text-[var(--color-text-muted)] text-xs">{req.user_email}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Plan</p>
+                    <p className="text-[var(--color-text-muted)]">Plan</p>
                     <p className="text-white">{getDurationText(req.duration_days)}</p>
-                    <p className="text-gray-400 text-xs">Amount: ₹{req.amount}</p>
+                    <p className="text-[var(--color-text-muted)] text-xs">Amount: ₹{req.amount}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Remaining Attempts</p>
+                    <p className="text-[var(--color-text-muted)]">Remaining Attempts</p>
                     <p className="text-white">{req.remaining_attempts} / 3</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Requested On</p>
+                    <p className="text-[var(--color-text-muted)]">Requested On</p>
                     <p className="text-white">{new Date(req.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ const PropertyVerificationPanel = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
             <h2 className="text-xl font-bold text-white mb-4">Reject Verification</h2>
-            <p className="text-gray-400 mb-4">
+            <p className="text-[var(--color-text-muted)] mb-4">
               Rejecting: <span className="text-white font-medium">{selectedRequest.property_title}</span>
             </p>
             <p className="text-sm text-yellow-500 mb-2">

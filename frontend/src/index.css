@@ -1,10 +1,46 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-secondary: var(--color-secondary);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+}
+
 @layer base {
+  :root {
+    --color-primary: #1E3A5F;
+    --color-primary-hover: #AD8B73;
+    --color-secondary: #E8DCC6;
+    --color-bg: #F9F7F5;
+    --color-surface: #FFFFFF;
+    --color-text: #1A2A3A;
+    --color-text-muted: #4A5568;
+    --color-border: #E8DCC6;
+  }
+
+  .dark {
+    --color-primary: #3B82F6;
+    --color-primary-hover: #60A5FA;
+    --color-secondary: #374151;
+    --color-bg: #0F172A;
+    --color-surface: #1E293B;
+    --color-text: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    --color-border: #334155;
+  }
+
   body {
-    background-color: #F9F7F5;
-    color: #1A2A3A;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   * {
@@ -29,70 +65,77 @@
 }
 
 @layer components {
-  /* Primary Button - Navy */
+  /* Primary Button */
   .btn-primary {
-    background-color: #1E3A5F;
+    background-color: var(--color-primary);
     color: white;
     padding: 0.625rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 500;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
   }
   .btn-primary:hover {
-    background-color: #AD8B73;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transform: scale(1.02);
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
   }
   .btn-primary:active {
     transform: scale(0.98);
   }
   
-  /* Secondary Button - Beige Outline */
+  /* Secondary Button */
   .btn-secondary {
-    background-color: white;
-    color: #4A5568;
+    background-color: var(--color-surface);
+    color: var(--color-text);
     padding: 0.625rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 500;
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
     transition: all 0.2s ease;
   }
   .btn-secondary:hover {
-    background-color: #F9F7F5;
-    border-color: #AD8B73;
+    border-color: var(--color-primary);
   }
   
   /* Outline Button */
   .btn-outline {
-    border: 2px solid #1E3A5F;
-    color: #1E3A5F;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
     padding: 0.625rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 500;
     transition: all 0.2s ease;
   }
   .btn-outline:hover {
-    background-color: #1E3A5F;
+    background-color: var(--color-primary);
     color: white;
   }
   
   /* Input Fields */
   .input {
     width: 100%;
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     padding: 0.625rem 1rem;
-    background-color: white;
+    background-color: var(--color-surface);
+    color: var(--color-text);
     transition: all 0.2s ease;
   }
   .input:focus {
     outline: none;
-    border-color: #AD8B73;
-    box-shadow: 0 0 0 2px rgba(173, 139, 115, 0.2);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
   .input::placeholder {
-    color: #A0AEC0;
+    color: var(--color-text-muted);
+  }
+
+  /* Hide browser's built-in password reveal button (Edge/Chromium) */
+  input::-ms-reveal,
+  input::-ms-clear,
+  input::-webkit-credentials-auto-fill-button {
+    display: none;
   }
   
   /* Input Label */
@@ -100,16 +143,16 @@
     display: block;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #4A5568;
+    color: var(--color-text-muted);
     margin-bottom: 0.375rem;
   }
   
   /* Card Styles */
   .card {
-    background-color: white;
+    background-color: var(--color-surface);
     border-radius: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
     transition: all 0.3s ease;
   }
   .card:hover {
@@ -119,16 +162,16 @@
   
   /* Property Card */
   .property-card {
-    background-color: white;
+    background-color: var(--color-surface);
     border-radius: 1rem;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
   }
   .property-card:hover {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     transform: translateY(-4px);
   }
   
@@ -184,25 +227,25 @@
   
   /* Filter Section */
   .filter-section {
-    background-color: white;
+    background-color: var(--color-surface);
     border-radius: 1rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
   }
   
-  /* Hero Gradient - Navy */
+  /* Hero Gradient */
   .hero-gradient {
-    background: linear-gradient(135deg, #1E3A5F 0%, #2C4A6F 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #2C4A6F 100%);
   }
   
   /* Stat Card for Dashboard */
   .stat-card {
-    background: linear-gradient(135deg, white 0%, #F9F7F5 100%);
+    background-color: var(--color-surface);
     border-radius: 1rem;
     padding: 1.25rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #E8DCC6;
+    border: 1px solid var(--color-border);
     transition: all 0.2s ease;
   }
   .stat-card:hover {
@@ -276,9 +319,10 @@
 
 /* Glassmorphism Effect */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--color-border);
+  opacity: 0.85;
 }
 
 /* Animation Classes */

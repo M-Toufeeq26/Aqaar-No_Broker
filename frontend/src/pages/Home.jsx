@@ -186,12 +186,12 @@ const Home = () => {
   const totalProperties = sponsoredProperties.length + regularProperties.length
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F9F7F5' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
       {/* Hero Section */}
-      <div className="relative" style={{ backgroundColor: '#1E3A5F' }}>
+      <div className="relative" style={{ backgroundColor: 'var(--color-primary)' }}>
         <div className="absolute bottom-0 left-0 right-0">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full">
-            <path fill="#F9F7F5" fillOpacity="1" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            <path fill='var(--color-bg)' fillOpacity="1" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
           </svg>
         </div>
         
@@ -207,7 +207,7 @@ const Home = () => {
             
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-all duration-300 text-sm font-medium border border-white/25 shadow-lg"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-all duration-300 text-sm font-medium border border-white/25 shadow-lg-lg"
             >
               <span className="text-base">{showFilters ? '▲' : '🔍'}</span>
               {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -216,20 +216,20 @@ const Home = () => {
 
           {/* Filter Section */}
           <div className={`transition-all duration-400 overflow-hidden ${showFilters ? 'max-h-[500px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-5 border border-gray-900">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg-2xl p-5 border border-gray-900">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div className="space-y-1">
-                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#1E3A5F' }}>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
                     <span>📍</span> State
                   </label>
                   <select
                     name="state_id"
                     value={filters.state_id}
                     onChange={handleFilterChange}
-                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all bg-white"
-                    style={{ borderColor: '#E8DCC6' }}
-                    onFocus={(e) => e.target.style.borderColor = '#AD8B73'}
-                    onBlur={(e) => e.target.style.borderColor = '#E8DCC6'}
+                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all bg-[var(--color-surface)]"
+                    style={{ borderColor: 'var(--color-border)' }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary-hover)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border)'}
                   >
                     <option value="">All States</option>
                     {states.map((state) => (
@@ -239,7 +239,7 @@ const Home = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#1E3A5F' }}>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
                     <span>🏙️</span> City
                   </label>
                   <select
@@ -247,10 +247,10 @@ const Home = () => {
                     value={filters.city}
                     onChange={handleFilterChange}
                     disabled={!filters.state_id}
-                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    style={{ borderColor: '#E8DCC6' }}
-                    onFocus={(e) => e.target.style.borderColor = '#AD8B73'}
-                    onBlur={(e) => e.target.style.borderColor = '#E8DCC6'}
+                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-[var(--color-surface)] disabled:bg-[var(--color-secondary)] disabled:cursor-not-allowed"
+                    style={{ borderColor: 'var(--color-border)' }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary-hover)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border)'}
                   >
                     <option value="">All Cities</option>
                     {cities.map((city) => (
@@ -260,7 +260,7 @@ const Home = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#1E3A5F' }}>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
                     <span>💰</span> Max Budget (₹)
                   </label>
                   <input
@@ -269,25 +269,25 @@ const Home = () => {
                     value={filters.max_price}
                     onChange={handleFilterChange}
                     placeholder="Enter your budget"
-                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-white"
-                    style={{ borderColor: '#E8DCC6' }}
-                    onFocus={(e) => e.target.style.borderColor = '#AD8B73'}
-                    onBlur={(e) => e.target.style.borderColor = '#E8DCC6'}
+                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-[var(--color-surface)]"
+                    style={{ borderColor: 'var(--color-border)' }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary-hover)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border)'}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#1E3A5F' }}>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
                     <span>🏷️</span> Type
                   </label>
                   <select
                     name="property_type"
                     value={filters.property_type}
                     onChange={handleFilterChange}
-                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-white"
-                    style={{ borderColor: '#E8DCC6' }}
-                    onFocus={(e) => e.target.style.borderColor = '#AD8B73'}
-                    onBlur={(e) => e.target.style.borderColor = '#E8DCC6'}
+                    className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-[var(--color-surface)]"
+                    style={{ borderColor: 'var(--color-border)' }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary-hover)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border)'}
                   >
                     <option value="">All Types</option>
                     <option value="land">Land Only</option>
@@ -296,7 +296,7 @@ const Home = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#1E3A5F' }}>
+                  <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-primary)' }}>
                     <span>📐</span> Target Sqft (±50)
                   </label>
                   <div className="relative">
@@ -306,10 +306,10 @@ const Home = () => {
                       value={filters.target_sqft}
                       onChange={handleFilterChange}
                       placeholder="e.g., 600"
-                      className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-white pr-8"
-                      style={{ borderColor: '#E8DCC6' }}
-                      onFocus={(e) => e.target.style.borderColor = '#AD8B73'}
-                      onBlur={(e) => e.target.style.borderColor = '#E8DCC6'}
+                      className="w-full px-3 py-2 text-sm rounded-xl border-2 focus:outline-none focus:ring-2 transition-all bg-[var(--color-surface)] pr-8"
+                      style={{ borderColor: 'var(--color-border)' }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--color-primary-hover)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--color-border)'}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault()
@@ -320,7 +320,7 @@ const Home = () => {
                     {filters.target_sqft && (
                       <button
                         onClick={clearTargetSqft}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-muted)]"
                       >
                         ✕
                       </button>
@@ -334,23 +334,23 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
+              <div className="flex justify-between items-center mt-4 pt-2 border-t border-[var(--color-border)]">
                 <button
                   onClick={handleSearch}
-                  className="px-6 py-2 text-sm rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
-                  style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
+                  className="px-6 py-2 text-sm rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg-md hover:shadow-lg-lg"
+                  style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
                 >
                   <span>🔍</span> Search Properties
                 </button>
                 
                 <button
                   onClick={resetFilters}
-                  className="px-5 py-2 text-sm rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-                  style={{ backgroundColor: '#F9F7F5', color: '#1E3A5F', border: '1px solid #E8DCC6' }}
-                  onMouseEnter={(e) => { e.target.style.backgroundColor = '#AD8B73'; e.target.style.color = 'white'; e.target.style.borderColor = '#AD8B73' }}
-                  onMouseLeave={(e) => { e.target.style.backgroundColor = '#F9F7F5'; e.target.style.color = '#1E3A5F'; e.target.style.borderColor = '#E8DCC6' }}
+                  className="px-5 py-2 text-sm rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg-md hover:shadow-lg-md"
+                  style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-primary)', border: '1px solid #E8DCC6' }}
+                  onMouseEnter={(e) => { e.target.style.backgroundColor = 'var(--color-primary-hover)'; e.target.style.color = 'white'; e.target.style.borderColor = 'var(--color-primary-hover)' }}
+                  onMouseLeave={(e) => { e.target.style.backgroundColor = 'var(--color-bg)'; e.target.style.color = 'var(--color-primary)'; e.target.style.borderColor = 'var(--color-border)' }}
                 >
                   <span>⟳</span> Reset Filters
                 </button>
@@ -367,15 +367,15 @@ const Home = () => {
         ) : totalProperties === 0 ? (
           <div className="text-center py-16">
             <div className="text-6xl mb-4 opacity-60">🏠</div>
-            <p className="text-gray-500 text-lg mb-4">No properties found matching your criteria.</p>
-            <p className="text-gray-400 text-sm mb-4">Try adjusting your filters</p>
+            <p className="text-[var(--color-text-muted)] text-lg mb-4">No properties found matching your criteria.</p>
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">Try adjusting your filters</p>
             {user ? (
               <button
                 onClick={() => navigate('/add-property')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
-                style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 shadow-lg-md hover:shadow-lg-lg transform hover:scale-105"
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
               >
                 <span className="text-lg">➕</span>
                 List Your Property
@@ -383,10 +383,10 @@ const Home = () => {
             ) : (
               <button
                 onClick={() => navigate('/login')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
-                style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 shadow-lg-md hover:shadow-lg-lg transform hover:scale-105"
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
               >
                 <span className="text-lg">🔐</span>
                 Login to List Property
@@ -397,7 +397,7 @@ const Home = () => {
           <>
             {/* Result count - at the TOP */}
             {hasActiveFilters && (
-              <div className="text-sm text-gray-500 mb-4 pb-2 border-b border-gray-200">
+              <div className="text-sm text-[var(--color-text-muted)] mb-4 pb-2 border-b border-[var(--color-border)]">
                 Found {totalProperties} property{totalProperties !== 1 ? 's' : ''} matching your filters
               </div>
             )}
@@ -409,7 +409,7 @@ const Home = () => {
                   <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm">⭐</span>
                   </div>
-                  <h2 className="text-xl font-bold" style={{ color: '#1E3A5F' }}>Sponsored Properties</h2>
+                  <h2 className="text-xl font-bold" style={{ color: 'var(--color-primary)' }}>Sponsored Properties</h2>
                   <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent"></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -428,7 +428,7 @@ const Home = () => {
                     <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm">🏠</span>
                     </div>
-                    <h2 className="text-xl font-bold" style={{ color: '#1E3A5F' }}>All Properties</h2>
+                    <h2 className="text-xl font-bold" style={{ color: 'var(--color-primary)' }}>All Properties</h2>
                     <div className="flex-1 h-px bg-gradient-to-r from-gray-300 to-transparent"></div>
                   </div>
                 )}

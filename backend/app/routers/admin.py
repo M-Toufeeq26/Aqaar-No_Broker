@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.database import get_db
@@ -550,6 +550,7 @@ def get_sponsorship_requests(
 @router.put("/sponsorship-requests/{request_id}/approve")
 def approve_sponsorship(
     request_id: int,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -584,11 +585,20 @@ def approve_sponsorship(
     )
     db.add(notification)
     db.commit()
+    
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "sponsorship_approved", "data": {"title": notification.title, "message": notification.message}},
+        request.user_id
+    )
+    
     return {"message": f"Sponsorship approved for property '{property.title}'"}
 
 @router.put("/sponsorship-requests/{request_id}/reject")
 def reject_sponsorship(
     request_id: int,
+    background_tasks: BackgroundTasks,
     reason: str = None,
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
@@ -616,6 +626,14 @@ def reject_sponsorship(
     )
     db.add(notification)
     db.commit()
+    
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "sponsorship_rejected", "data": {"title": notification.title, "message": notification.message}},
+        request.user_id
+    )
+    
     return {"message": "Sponsorship request rejected"}
 
 # ========== PROPERTY VERIFICATION REQUESTS ==========
@@ -649,6 +667,7 @@ def get_property_verification_requests(
 @router.put("/property-verifications/{request_id}/approve")
 def approve_property_verification(
     request_id: int,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -676,11 +695,20 @@ def approve_property_verification(
     )
     db.add(notification)
     db.commit()
+    
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "verification_approved", "data": {"title": notification.title, "message": notification.message}},
+        request.user_id
+    )
+    
     return {"message": f"Property '{property.title}' has been verified"}
 
 @router.put("/property-verifications/{request_id}/reject")
 def reject_property_verification(
     request_id: int,
+    background_tasks: BackgroundTasks,
     reason: str = None,
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db)
@@ -690,22 +718,29 @@ def reject_property_verification(
     ).first()
     if not request:
         raise HTTPException(status_code=404, detail="Verification request not found")
+    
     property = db.query(models.Property).filter(models.Property.id == request.property_id).first()
+    
+    # Decrement remaining attempts
     request.remaining_attempts -= 1
     request.admin_comment = reason
-    if request.remaining_attempts <= 0:
-        request.status = "rejected"
-    else:
-        request.status = "pending"
     request.reviewed_at = datetime.utcnow()
+    
+    # Mark as rejected regardless of remaining attempts
+    request.status = "rejected"
+    
     db.commit()
+    
+    # Create notification for the seller
     notification_message = f"Your verification request for property '{property.title if property else 'Unknown'}' was rejected."
     if reason:
         notification_message += f" Reason: {reason}"
+    
     if request.remaining_attempts > 0:
-        notification_message += f" You have {request.remaining_attempts} attempt(s) remaining."
+        notification_message += f" You have {request.remaining_attempts} attempt(s) remaining. You can submit a new verification request."
     else:
         notification_message += " You have no attempts left. Please make a new payment to try again."
+    
     notification = models.Notification(
         user_id=request.user_id,
         title="Property Verification Rejected",
@@ -716,6 +751,14 @@ def reject_property_verification(
     )
     db.add(notification)
     db.commit()
+    
+    from app.websockets import manager
+    background_tasks.add_task(
+        manager.send_personal_message,
+        {"type": "verification_rejected", "data": {"title": notification.title, "message": notification.message}},
+        request.user_id
+    )
+    
     return {"message": f"Verification request rejected. {request.remaining_attempts} attempts remaining"}
 
 # ========== PROPERTY EDIT REQUESTS ==========

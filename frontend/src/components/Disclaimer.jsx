@@ -14,7 +14,7 @@ const Disclaimer = ({ variant = 'footer' }) => {
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
                 <span className="font-semibold text-gray-300">Disclaimer:</span> {disclaimerText}
               </p>
             </div>

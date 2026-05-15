@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import RazorpayPayment from '../components/RazorpayPayment'
+import { useWebSocket } from '../context/WebSocketContext'
 
 const PropertyDetail = () => {
   const { id } = useParams()
@@ -46,8 +48,32 @@ const PropertyDetail = () => {
   const [sponsorshipDuration, setSponsorshipDuration] = useState('7')
   const [sponsorshipLoading, setSponsorshipLoading] = useState(false)
   const [sponsorshipPrices, setSponsorshipPrices] = useState({})
+  const [paymentTrigger, setPaymentTrigger] = useState(false)
+  const [currentPayment, setCurrentPayment] = useState({
+    amount: 0,
+    type: '',
+    duration: 0
+  })
+  const [verificationStatus, setVerificationStatus] = useState(null)
+  const [sponsorshipStatus, setSponsorshipStatus] = useState(null)
   const timerRef = useRef(null)
   const viewTrackedRef = useRef(false)
+  const { lastMessage } = useWebSocket()
+
+  // Real-time updates via WebSockets
+  useEffect(() => {
+    if (lastMessage && property) {
+      if (lastMessage.type === 'interest_approved' || lastMessage.type === 'interest_rejected') {
+        checkInterest()
+      } else if (lastMessage.type === 'verification_approved' || lastMessage.type === 'verification_rejected') {
+        fetchVerificationStatus()
+        fetchProperty()
+      } else if (lastMessage.type === 'sponsorship_approved' || lastMessage.type === 'sponsorship_rejected') {
+        fetchSponsorshipStatus()
+        fetchProperty()
+      }
+    }
+  }, [lastMessage])
 
   // Helper function to check if user is admin
   const isAdmin = () => {
@@ -104,6 +130,8 @@ const PropertyDetail = () => {
       startViewTimer()
       if (user.id === property.owner_id) {
         fetchLabeledDocuments()
+        fetchVerificationStatus()
+        fetchSponsorshipStatus()
       }
     }
     return () => {
@@ -135,6 +163,24 @@ const PropertyDetail = () => {
       console.error('Failed to fetch property', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchVerificationStatus = async () => {
+    try {
+      const res = await api.get(`/properties/${id}/verification-status`)
+      setVerificationStatus(res.data)
+    } catch (err) {
+      console.error('Failed to fetch verification status', err)
+    }
+  }
+
+  const fetchSponsorshipStatus = async () => {
+    try {
+      const res = await api.get(`/properties/${id}/sponsorship-status`)
+      setSponsorshipStatus(res.data)
+    } catch (err) {
+      console.error('Failed to fetch sponsorship status', err)
     }
   }
 
@@ -350,7 +396,6 @@ const PropertyDetail = () => {
   }
 
   const handleOpenDocument = (url) => {
-    // Fix backslashes to forward slashes for URL
     const fixedUrl = url.replace(/\\/g, '/')
     window.open(`http://localhost:8000${fixedUrl}`, '_blank')
   }
@@ -429,7 +474,7 @@ const PropertyDetail = () => {
     }
   }
 
-  const initiatePropertyVerification = async () => {
+  const initiatePropertyVerification = () => {
     const amount = verificationAmountMap[verificationDuration]
     const days = verificationDurationMap[verificationDuration]
     
@@ -438,41 +483,16 @@ const PropertyDetail = () => {
       return
     }
     
-    const confirmMsg = `Pay ₹${amount} to get this property verified for ${days} days? Payment is non-refundable.`
-    
-    if (!confirm(confirmMsg)) return
-    
-    setVerificationLoading(true)
-    try {
-      const response = await api.post('/payments/create-order', {
-        payment_type: 'property_verification',
-        amount: amount,
-        property_id: parseInt(id),
-        duration_days: days
-      })
-      
-      const confirmPayment = window.confirm(`Mock payment: ₹${amount}. Click OK to complete.`)
-      if (confirmPayment) {
-        await api.post('/payments/verify', {
-          order_id: response.data.order_id,
-          payment_id: 'mock_payment_id_' + Date.now(),
-          signature: 'mock_signature'
-        })
-        
-        alert('Verification request submitted! Admin will review within 2-3 days.')
-        fetchProperty()
-      }
-    } catch (err) {
-      console.error('Verification error:', err)
-      const errorMsg = err.response?.data?.detail || 'Payment failed. Please try again.'
-      alert(errorMsg)
-    } finally {
-      setVerificationLoading(false)
-      setShowVerificationModal(false)
-    }
+    setCurrentPayment({
+      amount: amount,
+      type: 'property_verification',
+      duration: days
+    })
+    setPaymentTrigger(true)
+    setShowVerificationModal(false)
   }
 
-  const initiateSponsorship = async () => {
+  const initiateSponsorship = () => {
     const durationMap = { '7': 7, '15': 15, '30': 30 }
     const days = durationMap[sponsorshipDuration]
     const amount = sponsorshipPrices[days]
@@ -482,38 +502,39 @@ const PropertyDetail = () => {
       return
     }
     
-    const confirmMsg = `Pay ₹${amount} to sponsor this property for ${days} days? Payment is non-refundable. Admin will review your request.`
-    
-    if (!confirm(confirmMsg)) return
-    
-    setSponsorshipLoading(true)
-    try {
-      const response = await api.post('/payments/create-order', {
-        payment_type: 'sponsored',
-        amount: amount,
-        property_id: parseInt(id),
-        duration_days: days
-      })
-      
-      const confirmPayment = window.confirm(`Mock payment: ₹${amount}. Click OK to complete.`)
-      if (confirmPayment) {
-        await api.post('/payments/verify', {
-          order_id: response.data.order_id,
-          payment_id: 'mock_payment_id_' + Date.now(),
-          signature: 'mock_signature'
-        })
-        
-        alert('Sponsorship request submitted! Admin will review within 2-3 days.')
-        fetchProperty()
-      }
-    } catch (err) {
-      console.error('Sponsorship error:', err)
-      const errorMsg = err.response?.data?.detail || 'Payment failed. Please try again.'
-      alert(errorMsg)
-    } finally {
-      setSponsorshipLoading(false)
-      setShowSponsorshipModal(false)
+    setCurrentPayment({
+      amount: amount,
+      type: 'sponsored',
+      duration: days
+    })
+    setPaymentTrigger(true)
+    setShowSponsorshipModal(false)
+  }
+
+  const handlePaymentSuccess = (paymentData) => {
+    console.log('Payment successful:', paymentData)
+    setPaymentTrigger(false)
+    fetchProperty()
+    if (currentPayment.type === 'property_verification') {
+      fetchVerificationStatus()
+    } else if (currentPayment.type === 'sponsored') {
+      fetchSponsorshipStatus()
     }
+    setCurrentPayment({
+      amount: 0,
+      type: '',
+      duration: 0
+    })
+  }
+
+  const handlePaymentError = (error) => {
+    console.error('Payment error:', error)
+    setPaymentTrigger(false)
+    setCurrentPayment({
+      amount: 0,
+      type: '',
+      duration: 0
+    })
   }
 
   const handleEdit = () => navigate(`/edit-property/${id}`)
@@ -617,7 +638,7 @@ const PropertyDetail = () => {
     return (
       <div className="text-center py-20">
         <div className="text-6xl mb-4">🔍</div>
-        <p className="text-gray-500 text-lg">Property not found</p>
+        <p className="text-[var(--color-text-muted)] text-lg">Property not found</p>
       </div>
     )
   }
@@ -637,7 +658,7 @@ const PropertyDetail = () => {
       {/* Disclaimer */}
       <div className="mb-4">
         <div 
-          className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-2 cursor-pointer transition-all duration-300 hover:shadow-md"
+          className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-2 cursor-pointer transition-all duration-300 hover:shadow-lg-md"
           onMouseEnter={() => setShowFullDisclaimer(true)}
           onMouseLeave={() => setShowFullDisclaimer(false)}
         >
@@ -657,7 +678,7 @@ const PropertyDetail = () => {
         {/* Left Column */}
         <div className="lg:w-2/3 space-y-6">
           {/* Image Gallery */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
             {selectedImage ? (
               <img 
                 src={`http://localhost:8000${selectedImage.image_url}`} 
@@ -667,7 +688,7 @@ const PropertyDetail = () => {
               />
             ) : (
               <div className="w-full h-96 bg-gray-200 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-gray-400">No Image Available</span>
+                <span className="text-[var(--color-text-muted)]">No Image Available</span>
               </div>
             )}
             {images.length > 1 && (
@@ -687,11 +708,11 @@ const PropertyDetail = () => {
           </div>
 
           {/* Title & Price with Badges */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold" style={{ color: '#1E3A5F' }}>{property.title}</h1>
-                <div className="flex items-center gap-2 mt-2 text-gray-500">
+                <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>{property.title}</h1>
+                <div className="flex items-center gap-2 mt-2 text-[var(--color-text-muted)]">
                   <span>📍</span>
                   <span>{property.location_city}</span>
                   {property.location_address && <span>• {property.location_address}</span>}
@@ -703,14 +724,14 @@ const PropertyDetail = () => {
                   {!isOwner && isLoggedIn && !hasReported && (
                     <button
                       onClick={() => setShowReportModal(true)}
-                      className="text-gray-400 hover:text-red-500 transition text-xl"
+                      className="text-[var(--color-text-muted)] hover:text-red-500 transition text-xl"
                       title="Report this property"
                     >
                       🚩
                     </button>
                   )}
                   {!isOwner && isLoggedIn && hasReported && (
-                    <span className="text-gray-400 text-sm" title="Already reported">✓ Reported</span>
+                    <span className="text-[var(--color-text-muted)] text-sm" title="Already reported">✓ Reported</span>
                   )}
                   <button onClick={handleWishlist} className={`text-3xl transition-transform hover:scale-110 ${inWishlist ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}`}>
                     {inWishlist ? '❤️' : '🤍'}
@@ -719,7 +740,7 @@ const PropertyDetail = () => {
               )}
             </div>
             <div className="mt-4 flex items-center gap-3 flex-wrap">
-              <span className="text-3xl font-bold" style={{ color: '#1E3A5F' }}>₹{property.price?.toLocaleString()}</span>
+              <span className="text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>₹{property.price?.toLocaleString()}</span>
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                 property.status === 'available' ? 'bg-green-100 text-green-700' : 
                 property.status === 'under_negotiation' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
@@ -742,38 +763,38 @@ const PropertyDetail = () => {
           </div>
 
           {/* Description */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h2 className="text-lg font-bold mb-3" style={{ color: '#1E3A5F' }}>Description</h2>
-            <p className="text-gray-600">{property.description || 'No description provided.'}</p>
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+            <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--color-primary)' }}>Description</h2>
+            <p className="text-[var(--color-text-muted)]">{property.description || 'No description provided.'}</p>
           </div>
 
           {/* Property Details */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h2 className="text-lg font-bold mb-4" style={{ color: '#1E3A5F' }}>Property Details</h2>
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Property Details</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-gray-500 text-sm">Property Type</p>
+              <div className="bg-[var(--color-bg)] rounded-xl p-3">
+                <p className="text-[var(--color-text-muted)] text-sm">Property Type</p>
                 <p className="font-semibold">{property.property_type === 'land' ? 'Land Only' : 'Land + House'}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-gray-500 text-sm">Land Size</p>
+              <div className="bg-[var(--color-bg)] rounded-xl p-3">
+                <p className="text-[var(--color-text-muted)] text-sm">Land Size</p>
                 <p className="font-semibold">{property.land_size_sqft} sq ft</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-gray-500 text-sm">Per Sqft Price</p>
+              <div className="bg-[var(--color-bg)] rounded-xl p-3">
+                <p className="text-[var(--color-text-muted)] text-sm">Per Sqft Price</p>
                 <p className="font-semibold">₹{property.per_sqft_price ? property.per_sqft_price.toLocaleString() : '0'}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-gray-500 text-sm">Views</p>
+              <div className="bg-[var(--color-bg)] rounded-xl p-3">
+                <p className="text-[var(--color-text-muted)] text-sm">Views</p>
                 <p className="font-semibold">{property.views_count || 0} views</p>
               </div>
             </div>
           </div>
 
           {/* Ratings Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold" style={{ color: '#1E3A5F' }}>Ratings & Reviews</h2>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--color-primary)' }}>Ratings & Reviews</h2>
               <div>
                 {canRate && (
                   <button
@@ -794,38 +815,38 @@ const PropertyDetail = () => {
               </div>
             </div>
             {ratings.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No ratings yet. Be the first to rate!</p>
+              <p className="text-[var(--color-text-muted)] text-center py-4">No ratings yet. Be the first to rate!</p>
             ) : (
               <>
-                <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-4 mb-6 p-4 bg-[var(--color-bg)] rounded-xl">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-800">{avgRating}</div>
+                    <div className="text-4xl font-bold text-[var(--color-text)]">{avgRating}</div>
                     <div className="flex text-yellow-400 text-sm">
                       {[...Array(5)].map((_, i) => (
                         <span key={i}>{i < Math.round(parseFloat(avgRating)) ? '★' : '☆'}</span>
                       ))}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">{ratings.length} review(s)</div>
+                    <div className="text-xs text-[var(--color-text-muted)] mt-1">{ratings.length} review(s)</div>
                   </div>
                 </div>
                 <div className="space-y-4">
                   {ratings.slice(0, 3).map((rating) => (
-                    <div key={rating.id} className="border-b border-gray-100 pb-3">
+                    <div key={rating.id} className="border-b border-[var(--color-border)] pb-3">
                       <div className="flex items-center gap-2">
                         <div className="flex text-yellow-400 text-sm">
                           {[...Array(5)].map((_, i) => (
                             <span key={i}>{i < rating.rating ? '★' : '☆'}</span>
                           ))}
                         </div>
-                        <span className="text-sm font-medium text-gray-700">{rating.user_name}</span>
+                        <span className="text-sm font-medium text-[var(--color-text)]">{rating.user_name}</span>
                         {rating.user_id === user?.id && (
                           <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">You</span>
                         )}
                       </div>
                       {rating.review && (
-                        <p className="text-gray-600 text-sm mt-1">{rating.review}</p>
+                        <p className="text-[var(--color-text-muted)] text-sm mt-1">{rating.review}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-1">{new Date(rating.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-[var(--color-text-muted)] mt-1">{new Date(rating.created_at).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>
@@ -837,15 +858,15 @@ const PropertyDetail = () => {
         {/* Right Column */}
         <div className="lg:w-1/3 space-y-6 sticky top-24 self-start">
           {/* Seller Information */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h2 className="text-lg font-bold mb-4" style={{ color: '#1E3A5F' }}>Seller Information</h2>
+          <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Seller Information</h2>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow" style={{ backgroundColor: '#AD8B73' }}>
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg" style={{ backgroundColor: 'var(--color-primary-hover)' }}>
                 {property.seller_name?.charAt(0).toUpperCase() || 'O'}
               </div>
               <div>
-                <p className="font-bold text-gray-800">Direct Owner</p>
-                <p className="text-sm text-gray-500">No broker involved</p>
+                <p className="font-bold text-[var(--color-text)]">Direct Owner</p>
+                <p className="text-sm text-[var(--color-text-muted)]">No broker involved</p>
               </div>
             </div>
 
@@ -857,43 +878,153 @@ const PropertyDetail = () => {
 
             {isOwner && (
               <div className="space-y-2 mt-4">
-                {/* Get Verified Button - Disabled if already verified */}
-                {isVerified ? (
-                  <div className="w-full bg-green-100 text-green-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-default">
-                    <span>✅</span> Property Verified
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowVerificationModal(true)}
-                    disabled={verificationLoading}
-                    className="w-full py-2.5 rounded-xl font-medium transition mb-2"
-                    style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
-                  >
-                    {verificationLoading ? 'Processing...' : '✅ Get Property Verified'}
-                  </button>
-                )}
+                {/* Get Verified Button */}
+                {(() => {
+                  if (!verificationStatus) {
+                    return (
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        disabled={verificationLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                        style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                      >
+                        {verificationLoading ? 'Processing...' : '✅ Get Property Verified'}
+                      </button>
+                    )
+                  }
 
-                {/* Sponsor Button - Disabled if already sponsored */}
-                {isSponsoredActive ? (
-                  <div className="w-full bg-yellow-100 text-yellow-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-default">
-                    <span>⭐</span> Property Sponsored
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowSponsorshipModal(true)}
-                    disabled={sponsorshipLoading}
-                    className="w-full py-2.5 rounded-xl font-medium transition mb-2"
-                    style={{ backgroundColor: '#F59E0B', color: 'white' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D97706'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#F59E0B'}
-                  >
-                    {sponsorshipLoading ? 'Processing...' : '⭐ Sponsor Property'}
-                  </button>
-                )}
+                  const { has_pending_request, is_verified, verified_until, remaining_attempts, last_rejection_reason } = verificationStatus
+                  const isExpired = verified_until && new Date(verified_until) < new Date()
 
-                <button onClick={handleEdit} className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">✏️ Edit Property</button>
+                  if (has_pending_request) {
+                    return (
+                      <button disabled className="w-full bg-yellow-100 text-yellow-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-not-allowed">
+                        <span>⏳</span> Verification Pending – Will be reviewed in 2-3 days
+                      </button>
+                    )
+                  }
+
+                  if (is_verified && !isExpired) {
+                    return (
+                      <button disabled className="w-full bg-green-100 text-green-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-default">
+                        <span>✅</span> Verified until {new Date(verified_until).toLocaleDateString()}
+                      </button>
+                    )
+                  }
+
+                  if (is_verified && isExpired) {
+                    return (
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        disabled={verificationLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                        style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                      >
+                        {verificationLoading ? 'Processing...' : '✅ Renew Verification'}
+                      </button>
+                    )
+                  }
+
+                  if (last_rejection_reason && remaining_attempts > 0) {
+                    return (
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        disabled={verificationLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2 bg-orange-500 text-white hover:bg-orange-600"
+                      >
+                        {verificationLoading ? 'Processing...' : `⭐ Try Again (${remaining_attempts} attempts left)`}
+                      </button>
+                    )
+                  }
+
+                  if (last_rejection_reason && remaining_attempts <= 0) {
+                    return (
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        disabled={verificationLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2 bg-red-500 text-white hover:bg-red-600"
+                      >
+                        {verificationLoading ? 'Processing...' : '❌ No attempts left – Pay again'}
+                      </button>
+                    )
+                  }
+
+                  return (
+                    <button
+                      onClick={() => setShowVerificationModal(true)}
+                      disabled={verificationLoading}
+                      className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                      style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
+                    >
+                      {verificationLoading ? 'Processing...' : '✅ Get Property Verified'}
+                    </button>
+                  )
+                })()}
+
+                {/* Sponsor Button */}
+                {(() => {
+                  if (!sponsorshipStatus) {
+                    return (
+                      <button
+                        onClick={() => setShowSponsorshipModal(true)}
+                        disabled={sponsorshipLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                        style={{ backgroundColor: '#F59E0B', color: 'white' }}
+                      >
+                        {sponsorshipLoading ? 'Processing...' : '⭐ Sponsor Property'}
+                      </button>
+                    )
+                  }
+
+                  const { has_pending_request, is_sponsored, sponsored_until } = sponsorshipStatus
+                  const isExpired = sponsored_until && new Date(sponsored_until) < new Date()
+
+                  if (has_pending_request) {
+                    return (
+                      <button disabled className="w-full bg-yellow-100 text-yellow-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-not-allowed">
+                        <span>⏳</span> Sponsorship Pending – Will be reviewed in 2-3 days
+                      </button>
+                    )
+                  }
+
+                  if (is_sponsored && !isExpired) {
+                    return (
+                      <button disabled className="w-full bg-green-100 text-green-700 py-2.5 rounded-xl font-medium text-center mb-2 flex items-center justify-center gap-2 cursor-default">
+                        <span>⭐</span> Sponsored until {new Date(sponsored_until).toLocaleDateString()}
+                      </button>
+                    )
+                  }
+
+                  if (is_sponsored && isExpired) {
+                    return (
+                      <button
+                        onClick={() => setShowSponsorshipModal(true)}
+                        disabled={sponsorshipLoading}
+                        className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                        style={{ backgroundColor: '#F59E0B', color: 'white' }}
+                      >
+                        {sponsorshipLoading ? 'Processing...' : '⭐ Renew Sponsorship'}
+                      </button>
+                    )
+                  }
+
+                  return (
+                    <button
+                      onClick={() => setShowSponsorshipModal(true)}
+                      disabled={sponsorshipLoading}
+                      className="w-full py-2.5 rounded-xl font-medium transition mb-2"
+                      style={{ backgroundColor: '#F59E0B', color: 'white' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#D97706'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#F59E0B'}
+                    >
+                      {sponsorshipLoading ? 'Processing...' : '⭐ Sponsor Property'}
+                    </button>
+                  )
+                })()}
+
+                <button onClick={handleEdit} className="w-full bg-[var(--color-secondary)] text-[var(--color-text)] py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">✏️ Edit Property</button>
                 <button onClick={handleDelete} className="w-full bg-red-50 text-red-600 py-2.5 rounded-xl font-medium hover:bg-red-100 transition">🗑️ Delete Property</button>
               </div>
             )}
@@ -910,13 +1041,13 @@ const PropertyDetail = () => {
                       interestStatus === 'pending' ? 'bg-yellow-500 text-white cursor-not-allowed' :
                       interestStatus === 'rejected' && cooldownUntil && new Date(cooldownUntil) > new Date() ? 'bg-gray-400 text-white cursor-not-allowed' :
                       interestStatus === 'rejected' ? 'bg-orange-500 text-white hover:bg-orange-600' :
-                      'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
+                      'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg-md'
                     }`}
                   >
                     {interestLoading ? 'Please wait...' : getButtonText()}
                   </button>
                 ) : (
-                  <button onClick={() => navigate('/login')} className="w-full py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md mt-4" style={{ backgroundColor: '#1E3A5F', color: 'white' }}>
+                  <button onClick={() => navigate('/login')} className="w-full py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-lg-md mt-4" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                     🔐 Login to Contact Seller
                   </button>
                 )}
@@ -924,16 +1055,16 @@ const PropertyDetail = () => {
             )}
 
             {!isOwner && property.status === 'sold' && (
-              <div className="mt-4 p-3 bg-gray-100 rounded-xl text-center">
-                <p className="text-gray-500 text-sm">This property has been sold</p>
+              <div className="mt-4 p-3 bg-[var(--color-secondary)] rounded-xl text-center">
+                <p className="text-[var(--color-text-muted)] text-sm">This property has been sold</p>
               </div>
             )}
           </div>
 
           {/* Admin Documents Section - Uses documents state with correct API fields */}
           {admin && documents.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
+            <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
                 <span>📄</span> Property Documents (Admin Access)
               </h2>
               
@@ -942,7 +1073,7 @@ const PropertyDetail = () => {
                   <button
                     key={doc.id}
                     onClick={() => handleOpenDocument(doc.document_url)}
-                    className="w-full py-3 px-3 bg-gray-50 rounded-xl text-sm text-left hover:bg-emerald-100 transition border border-gray-200 flex items-center gap-2"
+                    className="w-full py-3 px-3 bg-[var(--color-bg)] rounded-xl text-sm text-left hover:bg-emerald-100 transition border border-[var(--color-border)] flex items-center gap-2"
                   >
                     <span className="text-xl">📄</span>
                     <span className="truncate flex-1">{doc.original_filename || doc.document_label || `Document ${doc.id}`}</span>
@@ -954,8 +1085,8 @@ const PropertyDetail = () => {
 
           {/* Documents Section - For normal users with access */}
           {!admin && canViewDocuments() && allDocs.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
+            <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
                 <span>📄</span> Property Documents
               </h2>
               
@@ -976,19 +1107,19 @@ const PropertyDetail = () => {
                 {allDocs.map((doc) => (
                   <div key={doc.id} className="relative group">
                     <div
-                      className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                      className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:shadow-lg-lg ${
                         activeDocId === doc.id
                           ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-300 bg-gray-50 hover:border-emerald-400 hover:bg-emerald-50'
+                          : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:border-emerald-400 hover:bg-emerald-50'
                       }`}
                       onClick={() => handleCubeClick(doc.id)}
                     >
                       <div className="text-4xl mb-2">📄</div>
-                      <p className="text-xs font-medium text-center px-2 truncate w-full" style={{ color: '#1E3A5F' }}>
+                      <p className="text-xs font-medium text-center px-2 truncate w-full" style={{ color: 'var(--color-primary)' }}>
                         {doc.isOther ? (doc.filename.length > 20 ? doc.filename.substring(0, 18) + '...' : doc.filename) : doc.displayLabel}
                       </p>
                       {activeDocId === doc.id && (
-                        <p className="text-xs text-gray-500 mt-1 truncate w-full px-2 text-center">
+                        <p className="text-xs text-[var(--color-text-muted)] mt-1 truncate w-full px-2 text-center">
                           {doc.filename.length > 25 ? doc.filename.substring(0, 23) + '...' : doc.filename}
                         </p>
                       )}
@@ -997,9 +1128,9 @@ const PropertyDetail = () => {
                     <button
                       onClick={() => handleOpenDocument(doc.url)}
                       className="w-full mt-2 py-1.5 text-xs rounded-lg font-medium transition-all duration-200 opacity-0 group-hover:opacity-100"
-                      style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
+                      style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
                     >
                       View Document →
                     </button>
@@ -1011,20 +1142,20 @@ const PropertyDetail = () => {
 
           {/* Document Request Button - Hidden for Admin */}
           {!admin && !isOwner && isLoggedIn && !hasApprovedDocumentRequest && !canViewDocuments() && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-              <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: '#1E3A5F' }}>
+            <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-lg p-6 border border-[var(--color-border)]">
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
                 <span>📄</span> Property Documents
               </h2>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-[var(--color-text-muted)] mb-3">
                 Request access to view property documents (E-Khata, Sale Deed, etc.)
               </p>
               <button
                 onClick={handleDocumentRequest}
                 disabled={documentRequestLoading || hasPendingRequest}
                 className="w-full py-2.5 rounded-xl font-medium transition disabled:opacity-50"
-                style={{ backgroundColor: '#1E3A5F', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#AD8B73'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#1E3A5F'}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-primary-hover)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-primary)'}
               >
                 {documentRequestLoading ? 'Requesting...' : hasPendingRequest ? 'Request Pending' : '📋 Request Document Access'}
               </button>
@@ -1033,20 +1164,33 @@ const PropertyDetail = () => {
         </div>
       </div>
 
+      {/* Razorpay Payment Component */}
+      {paymentTrigger && (
+        <RazorpayPayment
+          amount={currentPayment.amount}
+          paymentType={currentPayment.type}
+          propertyId={id}
+          durationDays={currentPayment.duration}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+          trigger={paymentTrigger}
+        />
+      )}
+
       {/* Report Modal */}
       {showReportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1E3A5F' }}>Report Property</h2>
-            <p className="text-gray-600 text-sm mb-4">Why are you reporting this property?</p>
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Report Property</h2>
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">Why are you reporting this property?</p>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Report Reason *</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Report Reason *</label>
               <select
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                style={{ borderColor: '#E8DCC6' }}
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
               >
                 <option value="">Select a reason</option>
                 <option value="fake_listing">Fake listing (property doesn't exist)</option>
@@ -1060,17 +1204,17 @@ const PropertyDetail = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Additional Details (Optional)</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Additional Details (Optional)</label>
               <textarea
                 value={reportDescription}
                 onChange={(e) => setReportDescription(e.target.value)}
                 rows="3"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                style={{ borderColor: '#E8DCC6' }}
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
                 placeholder="Please provide more details about your report..."
                 maxLength="200"
               />
-              <p className="text-xs text-gray-400 mt-1">{reportDescription.length}/200 characters</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">{reportDescription.length}/200 characters</p>
             </div>
 
             <div className="flex gap-3">
@@ -1078,14 +1222,14 @@ const PropertyDetail = () => {
                 onClick={handleReportSubmit} 
                 disabled={reportLoading}
                 className="flex-1 py-2.5 rounded-lg font-medium transition disabled:opacity-50"
-                style={{ backgroundColor: '#1E3A5F', color: 'white' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 {reportLoading ? 'Submitting...' : 'Submit Report'}
               </button>
               <button 
                 onClick={() => { setShowReportModal(false); setReportType(''); setReportDescription('') }} 
                 className="flex-1 py-2.5 rounded-lg font-medium transition border"
-                style={{ borderColor: '#E8DCC6', color: '#4A5568' }}
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
               >
                 Cancel
               </button>
@@ -1097,16 +1241,17 @@ const PropertyDetail = () => {
       {/* Verification Modal */}
       {showVerificationModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1E3A5F' }}>Get Property Verified</h2>
-            <p className="text-gray-600 text-sm mb-4">Select verification duration. Payment is non-refundable.</p>
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Get Property Verified</h2>
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">Select verification duration. Payment is non-refundable.</p>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Duration</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Select Duration</label>
               <select
                 value={verificationDuration}
                 onChange={(e) => setVerificationDuration(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
               >
                 <option value="7">Weekly - ₹99 (7 days)</option>
                 <option value="30">Monthly - ₹349 (30 days)</option>
@@ -1121,10 +1266,10 @@ const PropertyDetail = () => {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={initiatePropertyVerification} disabled={verificationLoading} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: '#1E3A5F', color: 'white' }}>
-                {verificationLoading ? 'Processing...' : 'Proceed to Payment'}
+              <button onClick={initiatePropertyVerification} disabled={verificationLoading} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+                Proceed to Payment
               </button>
-              <button onClick={() => setShowVerificationModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: '#E8DCC6', color: '#4A5568' }}>
+              <button onClick={() => setShowVerificationModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
                 Cancel
               </button>
             </div>
@@ -1135,19 +1280,20 @@ const PropertyDetail = () => {
       {/* Sponsorship Modal */}
       {showSponsorshipModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1E3A5F' }}>Sponsor Property</h2>
-            <p className="text-gray-600 text-sm mb-4">
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Sponsor Property</h2>
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">
               Your property will appear at the top of search results and get a ⭐ Sponsored badge.
               Admin will review your request after payment.
             </p>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Duration</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Select Duration</label>
               <select
                 value={sponsorshipDuration}
                 onChange={(e) => setSponsorshipDuration(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
               >
                 <option value="7">7 days - ₹{sponsorshipPrices[7] || 699}</option>
                 <option value="15">15 days - ₹{sponsorshipPrices[15] || 1299}</option>
@@ -1169,12 +1315,12 @@ const PropertyDetail = () => {
                 className="flex-1 py-2.5 rounded-lg font-medium transition"
                 style={{ backgroundColor: '#F59E0B', color: 'white' }}
               >
-                {sponsorshipLoading ? 'Processing...' : 'Proceed to Payment'}
+                Proceed to Payment
               </button>
               <button
                 onClick={() => setShowSponsorshipModal(false)}
                 className="flex-1 py-2.5 rounded-lg font-medium transition border"
-                style={{ borderColor: '#E8DCC6', color: '#4A5568' }}
+                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
               >
                 Cancel
               </button>
@@ -1186,11 +1332,11 @@ const PropertyDetail = () => {
       {/* Rating Modal */}
       {showRatingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1E3A5F' }}>Rate this Property</h2>
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Rate this Property</h2>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Rating</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Your Rating</label>
               <div className="flex gap-2 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -1205,21 +1351,22 @@ const PropertyDetail = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Review (Optional)</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Your Review (Optional)</label>
               <textarea
                 value={ratingReview}
                 onChange={(e) => setRatingReview(e.target.value)}
                 rows="3"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
                 placeholder="Share your experience..."
               />
             </div>
 
             <div className="flex gap-3">
-              <button onClick={handleSubmitRating} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: '#1E3A5F', color: 'white' }}>
+              <button onClick={handleSubmitRating} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 Submit Rating
               </button>
-              <button onClick={() => setShowRatingModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: '#E8DCC6', color: '#4A5568' }}>
+              <button onClick={() => setShowRatingModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
                 Cancel
               </button>
             </div>
@@ -1230,11 +1377,11 @@ const PropertyDetail = () => {
       {/* Edit Rating Modal */}
       {showEditRatingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1E3A5F' }}>Edit Your Rating</h2>
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-primary)' }}>Edit Your Rating</h2>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Rating</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Your Rating</label>
               <div className="flex gap-2 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -1249,21 +1396,22 @@ const PropertyDetail = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Review (Optional)</label>
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Your Review (Optional)</label>
               <textarea
                 value={ratingReview}
                 onChange={(e) => setRatingReview(e.target.value)}
                 rows="3"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
                 placeholder="Update your review..."
               />
             </div>
 
             <div className="flex gap-3">
-              <button onClick={handleEditRating} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: '#1E3A5F', color: 'white' }}>
+              <button onClick={handleEditRating} className="flex-1 py-2.5 rounded-lg font-medium transition" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 Update Rating
               </button>
-              <button onClick={() => setShowEditRatingModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: '#E8DCC6', color: '#4A5568' }}>
+              <button onClick={() => setShowEditRatingModal(false)} className="flex-1 py-2.5 rounded-lg font-medium transition border" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
                 Cancel
               </button>
             </div>

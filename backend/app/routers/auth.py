@@ -123,6 +123,10 @@ def update_profile(
             raise HTTPException(status_code=400, detail="Phone number already in use")
         current_user.phone = user_data.phone
     if user_data.password:
+        if not user_data.current_password:
+            raise HTTPException(status_code=400, detail="Current password is required to change password")
+        if not verify_password(user_data.current_password, current_user.hashed_password):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
         current_user.hashed_password = hash_password(user_data.password)
     
     db.commit()

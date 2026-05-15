@@ -413,7 +413,7 @@ const AdminPanel = () => {
     return (
       <div className="text-center py-20">
         <div className="text-6xl mb-4">⛔</div>
-        <p className="text-gray-500 text-lg">Access denied. Admin only.</p>
+        <p className="text-[var(--color-text-muted)] text-lg">Access denied. Admin only.</p>
         <button onClick={() => window.location.href = '/'} className="bg-red-600 text-white px-4 py-2 rounded-lg mt-4">Go to Home</button>
       </div>
     )
@@ -428,12 +428,12 @@ const AdminPanel = () => {
       <div className="w-64 bg-gray-800 border-r border-gray-700 fixed left-0 top-0 h-full overflow-y-auto">
         <div className="p-6 border-b border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg-md">
               <span className="text-white font-bold text-lg">A</span>
             </div>
             <div>
               <span className="text-xl font-bold text-white">Aqaar</span>
-              <p className="text-xs text-gray-400">Admin Panel</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Admin Panel</p>
             </div>
           </div>
         </div>
@@ -445,7 +445,7 @@ const AdminPanel = () => {
               </div>
               <div>
                 <p className="font-semibold text-white text-sm">{user.full_name}</p>
-                <p className="text-xs text-gray-400">{user.email}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">{user.email}</p>
               </div>
             </div>
           </div>
@@ -511,40 +511,40 @@ const AdminPanel = () => {
         {activeTab === 'dashboard' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-              <button onClick={() => updateTab('users')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg cursor-pointer text-left">
+              <button onClick={() => updateTab('users')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg-lg cursor-pointer text-left">
                 <div className="flex items-center justify-between">
-                  <div><p className="text-gray-400 text-sm">Total Users</p><p className="text-3xl font-bold text-white">{dashboardStats.total_users}</p></div>
+                  <div><p className="text-[var(--color-text-muted)] text-sm">Total Users</p><p className="text-3xl font-bold text-white">{dashboardStats.total_users}</p></div>
                   <div className="w-12 h-12 bg-blue-900/50 rounded-xl flex items-center justify-center"><span className="text-2xl">👥</span></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">Click to view →</p>
               </button>
-              <button onClick={() => updateTab('properties')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg cursor-pointer text-left">
+              <button onClick={() => updateTab('properties')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg-lg cursor-pointer text-left">
                 <div className="flex items-center justify-between">
-                  <div><p className="text-gray-400 text-sm">Total Properties</p><p className="text-3xl font-bold text-white">{dashboardStats.total_properties}</p></div>
+                  <div><p className="text-[var(--color-text-muted)] text-sm">Total Properties</p><p className="text-3xl font-bold text-white">{dashboardStats.total_properties}</p></div>
                   <div className="w-12 h-12 bg-green-900/50 rounded-xl flex items-center justify-center"><span className="text-2xl">🏠</span></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">Click to view →</p>
               </button>
-              <button onClick={() => updateTab('reports', 'all_reports')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg cursor-pointer text-left">
+              <button onClick={() => updateTab('reports', 'all_reports')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg-lg cursor-pointer text-left">
                 <div className="flex items-center justify-between">
-                  <div><p className="text-gray-400 text-sm">Pending Reports</p><p className="text-3xl font-bold text-white">{dashboardStats.total_pending_reports}</p></div>
+                  <div><p className="text-[var(--color-text-muted)] text-sm">Pending Reports</p><p className="text-3xl font-bold text-white">{dashboardStats.total_pending_reports}</p></div>
                   <div className="w-12 h-12 bg-red-900/50 rounded-xl flex items-center justify-center"><span className="text-2xl">🚩</span></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">Click to view →</p>
               </button>
-              <button onClick={() => updateTab('verifications')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg cursor-pointer text-left">
+              <button onClick={() => updateTab('verifications')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg-lg cursor-pointer text-left">
                 <div className="flex items-center justify-between">
-                  <div><p className="text-gray-400 text-sm">Pending Verifications</p><p className="text-3xl font-bold text-white">{dashboardStats.pending_property_verifications}</p></div>
+                  <div><p className="text-[var(--color-text-muted)] text-sm">Pending Verifications</p><p className="text-3xl font-bold text-white">{dashboardStats.pending_property_verifications}</p></div>
                   <div className="w-12 h-12 bg-yellow-900/50 rounded-xl flex items-center justify-center"><span className="text-2xl">⏳</span></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">Click to view →</p>
               </button>
-              <button onClick={() => updateTab('sponsorships')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg cursor-pointer text-left">
+              <button onClick={() => updateTab('sponsorships')} className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition-all duration-200 hover:shadow-lg-lg cursor-pointer text-left">
                 <div className="flex items-center justify-between">
-                  <div><p className="text-gray-400 text-sm">Pending Sponsorships</p><p className="text-3xl font-bold text-white">{dashboardStats.pending_sponsorships}</p></div>
+                  <div><p className="text-[var(--color-text-muted)] text-sm">Pending Sponsorships</p><p className="text-3xl font-bold text-white">{dashboardStats.pending_sponsorships}</p></div>
                   <div className="w-12 h-12 bg-orange-900/50 rounded-xl flex items-center justify-center"><span className="text-2xl">⭐</span></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-2">Click to view →</p>
               </button>
             </div>
           </div>
@@ -595,7 +595,7 @@ const AdminPanel = () => {
             <div className="flex justify-between items-center mb-6">
               <input type="text" placeholder="Search by title or owner email..." value={searchProperty} onChange={(e) => setSearchProperty(e.target.value)} className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-red-500 w-80" />
             </div>
-            {loading ? <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full w-12 h-12 border-b-2 border-red-500"></div></div> : filteredProperties.length === 0 ? <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">🏠</div><p className="text-gray-400 text-lg">No properties found.</p></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full w-12 h-12 border-b-2 border-red-500"></div></div> : filteredProperties.length === 0 ? <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">🏠</div><p className="text-[var(--color-text-muted)] text-lg">No properties found.</p></div> : (
               <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -620,8 +620,8 @@ const AdminPanel = () => {
                           <td className="px-4 py-3 text-sm text-gray-300">₹{p.price?.toLocaleString()}</td>
                           <td className="px-4 py-3 text-sm"><span className={`px-2 py-1 rounded text-xs ${p.status === 'AVAILABLE' ? 'bg-green-900 text-green-300' : p.status === 'UNDER_NEGOTIATION' ? 'bg-yellow-900 text-yellow-300' : 'bg-red-900 text-red-300'}`}>{p.status}</span></td>
                           <td className="px-4 py-3 text-sm text-gray-300">{p.owner_email || p.owner_id}</td>
-                          <td className="px-4 py-3 text-sm">{p.is_verified ? <span className="text-green-400">✅</span> : <span className="text-gray-500">—</span>}</td>
-                          <td className="px-4 py-3 text-sm">{p.is_sponsored ? <span className="text-yellow-400">⭐</span> : <span className="text-gray-500">—</span>}</td>
+                          <td className="px-4 py-3 text-sm">{p.is_verified ? <span className="text-green-400">✅</span> : <span className="text-[var(--color-text-muted)]">—</span>}</td>
+                          <td className="px-4 py-3 text-sm">{p.is_sponsored ? <span className="text-yellow-400">⭐</span> : <span className="text-[var(--color-text-muted)]">—</span>}</td>
                           <td className="px-4 py-3 text-sm text-gray-300">{p.views_count || 0}</td>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex gap-2">
@@ -648,7 +648,7 @@ const AdminPanel = () => {
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   activeSubTab === 'all_reports'
                     ? 'text-red-500 border-b-2 border-red-500'
-                    : 'text-gray-400 hover:text-gray-300'
+                    : 'text-[var(--color-text-muted)] hover:text-gray-300'
                 }`}
               >
                 All Reports ({pendingReportsCount})
@@ -658,7 +658,7 @@ const AdminPanel = () => {
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   activeSubTab === 'not_removed'
                     ? 'text-red-500 border-b-2 border-red-500'
-                    : 'text-gray-400 hover:text-gray-300'
+                    : 'text-[var(--color-text-muted)] hover:text-gray-300'
                 }`}
               >
                 Not Removed Properties ({notRemovedCount})
@@ -669,7 +669,7 @@ const AdminPanel = () => {
               loading ? (
                 <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full w-12 h-12 border-b-2 border-red-500"></div></div>
               ) : reportsData.length === 0 ? (
-                <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">🚩</div><p className="text-gray-400 text-lg">No pending reports.</p></div>
+                <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">🚩</div><p className="text-[var(--color-text-muted)] text-lg">No pending reports.</p></div>
               ) : (
                 <div className="space-y-6">
                   {reportsData.map((propertyReport) => {
@@ -679,7 +679,7 @@ const AdminPanel = () => {
                     return (
                       <div key={propertyReport.property_id} className="bg-gray-800 rounded-xl border border-gray-700 p-5">
                         <h3 className="font-semibold text-xl text-white mb-2">{propertyReport.property_title}</h3>
-                        <p className="text-sm text-gray-400 mb-3">Total reports: {propertyReport.report_count}</p>
+                        <p className="text-sm text-[var(--color-text-muted)] mb-3">Total reports: {propertyReport.report_count}</p>
                         {propertyReport.report_count > 1 && (
                           <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-300 mb-1">Select a report:</label>
@@ -691,10 +691,10 @@ const AdminPanel = () => {
                         {selectedReport && (
                           <div className="bg-gray-700/30 rounded-xl p-4 mt-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                              <div><span className="text-gray-400">Reporter:</span> <span className="text-white">{selectedReport.reporter_name}</span></div>
-                              <div><span className="text-gray-400">Email:</span> <span className="text-white">{selectedReport.reporter_email}</span></div>
-                              <div><span className="text-gray-400">Reason:</span> <span className="text-white">{selectedReport.description}</span></div>
-                              <div><span className="text-gray-400">Date:</span> <span className="text-white">{selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleString() : 'N/A'}</span></div>
+                              <div><span className="text-[var(--color-text-muted)]">Reporter:</span> <span className="text-white">{selectedReport.reporter_name}</span></div>
+                              <div><span className="text-[var(--color-text-muted)]">Email:</span> <span className="text-white">{selectedReport.reporter_email}</span></div>
+                              <div><span className="text-[var(--color-text-muted)]">Reason:</span> <span className="text-white">{selectedReport.description}</span></div>
+                              <div><span className="text-[var(--color-text-muted)]">Date:</span> <span className="text-white">{selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleString() : 'N/A'}</span></div>
                             </div>
                             <div className="flex gap-3 mt-4">
                               <button onClick={() => handleSendWarning(propertyReport.property_id, propertyReport.property_title)} className="bg-yellow-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-yellow-600">Send Warning</button>
@@ -714,7 +714,7 @@ const AdminPanel = () => {
               loading ? (
                 <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full w-12 h-12 border-b-2 border-red-500"></div></div>
               ) : notRemovedWarnings.length === 0 ? (
-                <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">✅</div><p className="text-gray-400 text-lg">No properties with ignored warnings.</p></div>
+                <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">✅</div><p className="text-[var(--color-text-muted)] text-lg">No properties with ignored warnings.</p></div>
               ) : (
                 <div className="space-y-4">
                   {notRemovedWarnings.map((warning) => (
@@ -722,9 +722,9 @@ const AdminPanel = () => {
                       <div className="flex flex-wrap justify-between items-start gap-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg text-white">{warning.property_title}</h3>
-                          <p className="text-sm text-gray-400">Owner: {warning.owner_name} ({warning.owner_email})</p>
-                          <p className="text-sm text-gray-400 mt-1">Warning sent: {new Date(warning.sent_at).toLocaleString()}</p>
-                          <p className="text-sm text-gray-400 mt-1">Message: {warning.warning_message}</p>
+                          <p className="text-sm text-[var(--color-text-muted)]">Owner: {warning.owner_name} ({warning.owner_email})</p>
+                          <p className="text-sm text-[var(--color-text-muted)] mt-1">Warning sent: {new Date(warning.sent_at).toLocaleString()}</p>
+                          <p className="text-sm text-[var(--color-text-muted)] mt-1">Message: {warning.warning_message}</p>
                           <p className="text-xs text-red-400 mt-1">Expired on: {new Date(warning.expires_at).toLocaleString()}</p>
                         </div>
                         <div className="flex gap-2">
@@ -747,13 +747,13 @@ const AdminPanel = () => {
         {activeTab === 'sponsorships' && (
           <div>
             {loading ? <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full w-12 h-12 border-b-2 border-red-500"></div></div> : sponsorshipRequests.length === 0 ? (
-              <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">⭐</div><p className="text-gray-400 text-lg">No pending sponsorship requests.</p></div>
+              <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700"><div className="text-6xl mb-4">⭐</div><p className="text-[var(--color-text-muted)] text-lg">No pending sponsorship requests.</p></div>
             ) : (
               <div className="space-y-4">
                 {sponsorshipRequests.map(req => (
                   <div key={req.id} className="bg-gray-800 rounded-xl border border-gray-700 p-5">
                     <div className="flex flex-wrap justify-between items-start gap-4">
-                      <div className="flex-1"><div><h3 className="font-semibold text-lg text-white">{req.property_title}</h3><span className="bg-yellow-900 text-yellow-300 text-xs px-2 py-0.5 rounded-full">{req.duration_days} days - ₹{req.amount}</span></div><p className="text-sm text-gray-400 mt-1">Owner: {req.user_name} ({req.user_email})</p><p className="text-xs text-gray-500 mt-1">Requested: {new Date(req.created_at).toLocaleDateString()}</p></div>
+                      <div className="flex-1"><div><h3 className="font-semibold text-lg text-white">{req.property_title}</h3><span className="bg-yellow-900 text-yellow-300 text-xs px-2 py-0.5 rounded-full">{req.duration_days} days - ₹{req.amount}</span></div><p className="text-sm text-[var(--color-text-muted)] mt-1">Owner: {req.user_name} ({req.user_email})</p><p className="text-xs text-[var(--color-text-muted)] mt-1">Requested: {new Date(req.created_at).toLocaleDateString()}</p></div>
                       <div className="flex gap-2"><button onClick={() => handleApproveSponsorship(req.id, req.property_title)} className="bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-600">Approve</button><button onClick={() => handleRejectSponsorship(req.id, req.property_title)} className="bg-red-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-600">Reject</button></div>
                     </div>
                   </div>
@@ -766,8 +766,8 @@ const AdminPanel = () => {
         {/* Profile Tab */}
         {activeTab === 'profile' && adminProfile && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 max-w-md">
-            <div className="flex items-center gap-4 mb-6"><div className="w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">{adminProfile.full_name?.charAt(0).toUpperCase() || 'A'}</div><div><h2 className="text-xl font-bold text-white">{adminProfile.full_name}</h2><p className="text-gray-400">{adminProfile.email}</p><span className="inline-block mt-1 px-2 py-0.5 bg-red-900 text-red-300 text-xs rounded-full">Administrator</span></div></div>
-            <div className="space-y-3 border-t border-gray-700 pt-4"><div className="flex justify-between"><span className="text-gray-400">Phone</span><span className="text-white">{adminProfile.phone || 'Not provided'}</span></div><div className="flex justify-between"><span className="text-gray-400">Email Verified</span><span className="text-green-400">{adminProfile.is_verified ? 'Yes' : 'No'}</span></div><div className="flex justify-between"><span className="text-gray-400">Member Since</span><span className="text-white">{adminProfile.created_at ? new Date(adminProfile.created_at).toLocaleDateString() : 'N/A'}</span></div></div>
+            <div className="flex items-center gap-4 mb-6"><div className="w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">{adminProfile.full_name?.charAt(0).toUpperCase() || 'A'}</div><div><h2 className="text-xl font-bold text-white">{adminProfile.full_name}</h2><p className="text-[var(--color-text-muted)]">{adminProfile.email}</p><span className="inline-block mt-1 px-2 py-0.5 bg-red-900 text-red-300 text-xs rounded-full">Administrator</span></div></div>
+            <div className="space-y-3 border-t border-gray-700 pt-4"><div className="flex justify-between"><span className="text-[var(--color-text-muted)]">Phone</span><span className="text-white">{adminProfile.phone || 'Not provided'}</span></div><div className="flex justify-between"><span className="text-[var(--color-text-muted)]">Email Verified</span><span className="text-green-400">{adminProfile.is_verified ? 'Yes' : 'No'}</span></div><div className="flex justify-between"><span className="text-[var(--color-text-muted)]">Member Since</span><span className="text-white">{adminProfile.created_at ? new Date(adminProfile.created_at).toLocaleDateString() : 'N/A'}</span></div></div>
             <div className="mt-6 p-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg"><p className="text-xs text-yellow-400">ℹ️ Profile information is read-only. Contact super admin for any changes.</p></div>
           </div>
         )}
@@ -780,14 +780,14 @@ const AdminPanel = () => {
       {showUserDetailModal && selectedUserDetail && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto">
           <div className="bg-gray-800 rounded-2xl p-6 max-w-3xl w-full mx-4 my-8 border border-gray-700 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white">User Details</h2><button onClick={() => setShowUserDetailModal(false)} className="text-gray-400 hover:text-white text-2xl">×</button></div>
+            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-white">User Details</h2><button onClick={() => setShowUserDetailModal(false)} className="text-[var(--color-text-muted)] hover:text-white text-2xl">×</button></div>
             <div className="space-y-6">
-              <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Basic Information</h3><div className="grid grid-cols-2 gap-3 text-sm"><div><span className="text-gray-400">Name:</span> <span className="text-white">{selectedUserDetail.full_name}</span></div><div><span className="text-gray-400">Email:</span> <span className="text-white">{selectedUserDetail.email}</span></div><div><span className="text-gray-400">Phone:</span> <span className="text-white">{selectedUserDetail.phone}</span></div><div><span className="text-gray-400">Joined:</span> <span className="text-white">{new Date(selectedUserDetail.created_at).toLocaleDateString()}</span></div><div><span className="text-gray-400">Status:</span> {selectedUserDetail.is_blocked ? <span className="text-red-400">Blocked</span> : <span className="text-green-400">Active</span>}</div>{selectedUserDetail.block_reason && <div className="col-span-2"><span className="text-gray-400">Block Reason:</span> <span className="text-yellow-400">{selectedUserDetail.block_reason}</span></div>}{selectedUserDetail.block_until && <div><span className="text-gray-400">Block Until:</span> <span className="text-yellow-400">{new Date(selectedUserDetail.block_until).toLocaleDateString()}</span></div>}</div></div>
+              <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Basic Information</h3><div className="grid grid-cols-2 gap-3 text-sm"><div><span className="text-[var(--color-text-muted)]">Name:</span> <span className="text-white">{selectedUserDetail.full_name}</span></div><div><span className="text-[var(--color-text-muted)]">Email:</span> <span className="text-white">{selectedUserDetail.email}</span></div><div><span className="text-[var(--color-text-muted)]">Phone:</span> <span className="text-white">{selectedUserDetail.phone}</span></div><div><span className="text-[var(--color-text-muted)]">Joined:</span> <span className="text-white">{new Date(selectedUserDetail.created_at).toLocaleDateString()}</span></div><div><span className="text-[var(--color-text-muted)]">Status:</span> {selectedUserDetail.is_blocked ? <span className="text-red-400">Blocked</span> : <span className="text-green-400">Active</span>}</div>{selectedUserDetail.block_reason && <div className="col-span-2"><span className="text-[var(--color-text-muted)]">Block Reason:</span> <span className="text-yellow-400">{selectedUserDetail.block_reason}</span></div>}{selectedUserDetail.block_until && <div><span className="text-[var(--color-text-muted)]">Block Until:</span> <span className="text-yellow-400">{new Date(selectedUserDetail.block_until).toLocaleDateString()}</span></div>}</div></div>
               {userProperties.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Properties ({userProperties.length})</h3><div className="space-y-2">{userProperties.map(prop => (<div key={prop.id} className="flex justify-between items-center text-sm"><span className="text-gray-300">{prop.title}</span><div className="flex gap-2"><span className="text-green-400">₹{prop.price.toLocaleString()}</span>{prop.is_verified && <span className="text-blue-400">✅ Verified</span>}</div></div>))}</div></div>}
               {userInterests.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Interests ({userInterests.length})</h3><div className="space-y-2">{userInterests.map(interest => (<div key={interest.id} className="flex justify-between items-center text-sm"><span className="text-gray-300">{interest.property_title}</span><span className="text-yellow-400">{interest.status}</span></div>))}</div></div>}
               {userWishlist.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Wishlist ({userWishlist.length})</h3><div className="space-y-2">{userWishlist.map(item => (<div key={item.id} className="flex justify-between items-center text-sm"><span className="text-gray-300">{item.property_title}</span><span className="text-green-400">₹{item.property_price?.toLocaleString()}</span></div>))}</div></div>}
-              {userPayments.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Payments ({userPayments.length})</h3><div className="space-y-2">{userPayments.map(payment => (<div key={payment.id} className="flex justify-between items-center text-sm"><span className="text-gray-300">{payment.payment_type}</span><span className="text-green-400">₹{payment.amount}</span><span className="text-gray-500 text-xs">{new Date(payment.created_at).toLocaleDateString()}</span></div>))}</div></div>}
-              {userChats.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Recent Chats ({userChats.length})</h3><div className="space-y-2 max-h-40 overflow-y-auto">{userChats.map(chat => (<div key={chat.id} className="text-sm"><span className="text-gray-400">{chat.is_sent_by_user ? '→' : '←'}</span><span className="text-gray-300 ml-1">{chat.message.substring(0,100)}</span><span className="text-gray-500 text-xs ml-2">{new Date(chat.created_at).toLocaleDateString()}</span></div>))}</div></div>}
+              {userPayments.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Payments ({userPayments.length})</h3><div className="space-y-2">{userPayments.map(payment => (<div key={payment.id} className="flex justify-between items-center text-sm"><span className="text-gray-300">{payment.payment_type}</span><span className="text-green-400">₹{payment.amount}</span><span className="text-[var(--color-text-muted)] text-xs">{new Date(payment.created_at).toLocaleDateString()}</span></div>))}</div></div>}
+              {userChats.length > 0 && <div className="bg-gray-700/30 rounded-xl p-4"><h3 className="font-semibold text-white mb-3">Recent Chats ({userChats.length})</h3><div className="space-y-2 max-h-40 overflow-y-auto">{userChats.map(chat => (<div key={chat.id} className="text-sm"><span className="text-[var(--color-text-muted)]">{chat.is_sent_by_user ? '→' : '←'}</span><span className="text-gray-300 ml-1">{chat.message.substring(0,100)}</span><span className="text-[var(--color-text-muted)] text-xs ml-2">{new Date(chat.created_at).toLocaleDateString()}</span></div>))}</div></div>}
             </div>
           </div>
         </div>
@@ -798,7 +798,7 @@ const AdminPanel = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
             <h2 className="text-xl font-bold text-white mb-4">Block User</h2>
-            <p className="text-gray-400 mb-4">Blocking: <span className="text-white font-medium">{userToBlock.full_name}</span></p>
+            <p className="text-[var(--color-text-muted)] mb-4">Blocking: <span className="text-white font-medium">{userToBlock.full_name}</span></p>
             <div className="mb-4"><label className="block text-sm font-medium text-gray-300 mb-1">Block Duration</label><select value={blockDuration} onChange={(e) => setBlockDuration(e.target.value)} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-500"><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="permanent">Permanent</option></select></div>
             <div className="mb-4"><label className="block text-sm font-medium text-gray-300 mb-1">Reason for blocking</label><textarea value={blockReason} onChange={(e) => setBlockReason(e.target.value)} rows="3" className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-500" placeholder="Enter reason for blocking this user..."/></div>
             <div className="flex gap-3"><button onClick={handleBlockUser} className="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700">Block User</button><button onClick={() => { setShowBlockModal(false); setUserToBlock(null); setBlockReason(''); setBlockDuration('7'); }} className="flex-1 bg-gray-700 text-gray-300 py-2 rounded-lg font-medium hover:bg-gray-600">Cancel</button></div>

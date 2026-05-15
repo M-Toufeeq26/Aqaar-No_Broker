@@ -82,29 +82,29 @@ const NotificationHistory = () => {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+        <div className="bg-[var(--color-surface)] rounded-2xl p-12 text-center border border-[var(--color-border)]">
           <div className="text-6xl mb-4">🔔</div>
-          <p className="text-gray-500 text-lg">No notifications yet.</p>
-          <p className="text-sm text-gray-400 mt-2">When you receive notifications, they will appear here.</p>
+          <p className="text-[var(--color-text-muted)] text-lg">No notifications yet.</p>
+          <p className="text-sm text-[var(--color-text-muted)] mt-2">When you receive notifications, they will appear here.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {notifications.map((notif) => (
             <div
               key={notif.id}
-              className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition ${!notif.is_read ? 'border-l-4 border-l-blue-500' : ''}`}
+              className={`bg-[var(--color-surface)] rounded-xl shadow-lg-md border p-4 hover:shadow-lg-md transition ${!notif.is_read ? 'border-l-4 border-l-blue-500' : ''}`}
               onClick={() => markAsRead(notif.id)}
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-800">{notif.title}</h3>
+                    <h3 className="font-semibold text-[var(--color-text)]">{notif.title}</h3>
                     {!notif.is_read && (
                       <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">New</span>
                     )}
                   </div>
-                  <p className="text-gray-600 text-sm mt-1">{notif.message}</p>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-[var(--color-text-muted)] text-sm mt-1">{notif.message}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-2">
                     {new Date(notif.created_at).toLocaleDateString()} at {new Date(notif.created_at).toLocaleTimeString()}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ const NotificationHistory = () => {
                     e.stopPropagation()
                     deleteNotification(notif.id)
                   }}
-                  className="text-gray-400 hover:text-red-500 transition"
+                  className="text-[var(--color-text-muted)] hover:text-red-500 transition"
                 >
                   🗑️
                 </button>

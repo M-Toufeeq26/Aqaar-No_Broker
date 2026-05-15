@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useWebSocket } from '../context/WebSocketContext'
 import api from '../services/api'
 
 const Requests = () => {
@@ -9,12 +10,20 @@ const Requests = () => {
   const [documentRequests, setDocumentRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(null)
+  const { lastMessage } = useWebSocket()
 
   useEffect(() => {
     Promise.all([fetchChatRequests(), fetchDocumentRequests()]).finally(() => {
       setLoading(false)
     })
   }, [])
+
+  useEffect(() => {
+    if (lastMessage && lastMessage.type === 'new_notification') {
+      fetchChatRequests()
+      fetchDocumentRequests()
+    }
+  }, [lastMessage])
 
   const fetchChatRequests = async () => {
     try {
@@ -74,14 +83,14 @@ const Requests = () => {
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Requests</h1>
 
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-[var(--color-border)] mb-6">
         <nav className="flex gap-6">
           <button
             onClick={() => setActiveTab('chat')}
             className={`pb-3 px-1 font-medium transition-all ${
               activeTab === 'chat'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
             }`}
           >
             Chat Requests ({chatRequests.length})
@@ -91,7 +100,7 @@ const Requests = () => {
             className={`pb-3 px-1 font-medium transition-all ${
               activeTab === 'document'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
             }`}
           >
             Document Requests ({documentRequests.length})
@@ -102,22 +111,22 @@ const Requests = () => {
       {activeTab === 'chat' && (
         <div>
           {chatRequests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+            <div className="bg-[var(--color-surface)] rounded-2xl p-12 text-center border border-[var(--color-border)]">
               <div className="text-6xl mb-4">💬</div>
-              <p className="text-gray-500 text-lg">No pending chat requests.</p>
-              <p className="text-sm text-gray-400 mt-2">When buyers show interest, you'll see them here.</p>
+              <p className="text-[var(--color-text-muted)] text-lg">No pending chat requests.</p>
+              <p className="text-sm text-[var(--color-text-muted)] mt-2">When buyers show interest, you'll see them here.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {chatRequests.map((request) => (
-                <div key={request.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div key={request.id} className="bg-[var(--color-surface)] rounded-xl shadow-lg-md border border-[var(--color-border)] p-5">
                   <div className="flex flex-wrap justify-between items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-gray-800">{request.property_title}</h3>
-                      <p className="text-gray-600 mt-1">
+                      <h3 className="font-semibold text-lg text-[var(--color-text)]">{request.property_title}</h3>
+                      <p className="text-[var(--color-text-muted)] mt-1">
                         <span className="font-medium">Buyer:</span> {request.buyer_name}
                       </p>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-[var(--color-text-muted)] mt-1">
                         Requested on: {new Date(request.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -148,22 +157,22 @@ const Requests = () => {
       {activeTab === 'document' && (
         <div>
           {documentRequests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+            <div className="bg-[var(--color-surface)] rounded-2xl p-12 text-center border border-[var(--color-border)]">
               <div className="text-6xl mb-4">📄</div>
-              <p className="text-gray-500 text-lg">No pending document requests.</p>
-              <p className="text-sm text-gray-400 mt-2">When buyers request document access, you'll see them here.</p>
+              <p className="text-[var(--color-text-muted)] text-lg">No pending document requests.</p>
+              <p className="text-sm text-[var(--color-text-muted)] mt-2">When buyers request document access, you'll see them here.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {documentRequests.map((request) => (
-                <div key={request.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div key={request.id} className="bg-[var(--color-surface)] rounded-xl shadow-lg-md border border-[var(--color-border)] p-5">
                   <div className="flex flex-wrap justify-between items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-gray-800">{request.property_title}</h3>
-                      <p className="text-gray-600 mt-1">
+                      <h3 className="font-semibold text-lg text-[var(--color-text)]">{request.property_title}</h3>
+                      <p className="text-[var(--color-text-muted)] mt-1">
                         <span className="font-medium">Buyer:</span> {request.buyer_name}
                       </p>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-[var(--color-text-muted)] mt-1">
                         Requested on: {new Date(request.created_at).toLocaleDateString()}
                       </p>
                       {request.rejection_count > 0 && (

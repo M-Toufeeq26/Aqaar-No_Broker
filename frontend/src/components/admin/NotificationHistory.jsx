@@ -154,7 +154,7 @@ const NotificationHistory = () => {
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'received'
               ? 'text-red-500 border-b-2 border-red-500'
-              : 'text-gray-400 hover:text-gray-300'
+              : 'text-[var(--color-text-muted)] hover:text-gray-300'
           }`}
         >
           📥 Received
@@ -165,7 +165,7 @@ const NotificationHistory = () => {
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === 'sent'
                 ? 'text-red-500 border-b-2 border-red-500'
-                : 'text-gray-400 hover:text-gray-300'
+                : 'text-[var(--color-text-muted)] hover:text-gray-300'
             }`}
           >
             📤 Sent
@@ -214,7 +214,7 @@ const NotificationHistory = () => {
           {receivedNotifications.length === 0 ? (
             <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700">
               <div className="text-6xl mb-4">📭</div>
-              <p className="text-gray-400 text-lg">No notifications</p>
+              <p className="text-[var(--color-text-muted)] text-lg">No notifications</p>
             </div>
           ) : (
             receivedNotifications.map((notif) => (
@@ -234,8 +234,8 @@ const NotificationHistory = () => {
                           <span className="px-2 py-0.5 rounded text-xs bg-red-900 text-red-300">New</span>
                         )}
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">{notif.message}</p>
-                      <p className="text-gray-500 text-xs mt-2">
+                      <p className="text-[var(--color-text-muted)] text-sm mt-1">{notif.message}</p>
+                      <p className="text-[var(--color-text-muted)] text-xs mt-2">
                         {new Date(notif.created_at).toLocaleString()}
                       </p>
                     </div>
@@ -269,8 +269,8 @@ const NotificationHistory = () => {
           {sentNotifications.length === 0 ? (
             <div className="bg-gray-800 rounded-2xl p-12 text-center border border-gray-700">
               <div className="text-6xl mb-4">📤</div>
-              <p className="text-gray-400 text-lg">No sent notifications yet</p>
-              <p className="text-sm text-gray-500 mt-2">Broadcast messages will appear here</p>
+              <p className="text-[var(--color-text-muted)] text-lg">No sent notifications yet</p>
+              <p className="text-sm text-[var(--color-text-muted)] mt-2">Broadcast messages will appear here</p>
             </div>
           ) : (
             sentNotifications.map((notif) => (
@@ -279,15 +279,15 @@ const NotificationHistory = () => {
                   <div className="text-2xl">{getTypeIcon(notif.type)}</div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">{notif.title}</h3>
-                    <p className="text-gray-400 text-sm mt-1">{notif.message}</p>
+                    <p className="text-[var(--color-text-muted)] text-sm mt-1">{notif.message}</p>
                     <div className="flex flex-wrap gap-3 mt-2 text-xs">
-                      <span className="text-gray-500">
+                      <span className="text-[var(--color-text-muted)]">
                         To: {notif.recipient_name} ({notif.recipient_email})
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-[var(--color-text-muted)]">
                         Status: {notif.is_read ? '✓ Read' : '○ Unread'}
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-[var(--color-text-muted)]">
                         {new Date(notif.created_at).toLocaleString()}
                       </span>
                     </div>
@@ -304,7 +304,7 @@ const NotificationHistory = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
             <h2 className="text-xl font-bold text-white mb-4">Send Broadcast Notification</h2>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">
               This notification will be sent to <span className="text-white font-medium">ALL users</span> on the platform.
             </p>
 

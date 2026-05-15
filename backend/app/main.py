@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base
 from app.routers import auth, properties, documents, chat, wishlist, reports, admin, payments, notifications, locations, verifications
+from app.websockets import manager
+from fastapi import WebSocket, WebSocketDisconnect
 import os
 
 os.makedirs("uploads/images", exist_ok=True)
@@ -41,3 +43,15 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            # We don't necessarily expect messages from the client in this basic setup
+            # but we need to keep the connection open and listen
+            data = await websocket.receive_text()
+            # Could handle client-to-server WS messages here if needed
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)

@@ -54,11 +54,11 @@ const PropertyCard = ({ property }) => {
 
   const getStatusBadge = () => {
     if (property.status === 'available') {
-      return <span className="bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">Available</span>
+      return <span className="bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg-md">Available</span>
     } else if (property.status === 'under_negotiation') {
-      return <span className="bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">Under Negotiation</span>
+      return <span className="bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg-md">Under Negotiation</span>
     } else if (property.status === 'sold') {
-      return <span className="bg-red-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md">Sold</span>
+      return <span className="bg-red-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg-md">Sold</span>
     }
     return null
   }
@@ -67,7 +67,7 @@ const PropertyCard = ({ property }) => {
   const isVerified = property.is_verified === true || property.is_verified === 1
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border border-gray-100">
+    <div className="group bg-[var(--color-surface)] rounded-2xl overflow-hidden shadow-lg-md hover:shadow-lg-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border border-[var(--color-border)]">
       {/* Image Section */}
       <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {!loadingImage && images.length > 0 ? (
@@ -101,7 +101,7 @@ const PropertyCard = ({ property }) => {
           </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-gray-400 text-lg">🏠 No Image</span>
+            <span className="text-[var(--color-text-muted)] text-lg">🏠 No Image</span>
           </div>
         )}
         
@@ -113,7 +113,7 @@ const PropertyCard = ({ property }) => {
         {/* Verified Badge - Top Right (ONLY badge on card - no sponsored badge) */}
         {isVerified && (
           <div className="absolute top-3 right-3 z-10">
-            <span className="bg-blue-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md flex items-center gap-1">
+            <span className="bg-blue-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg-md flex items-center gap-1">
               ✅ Verified
             </span>
           </div>
@@ -122,7 +122,7 @@ const PropertyCard = ({ property }) => {
         {/* Pending Changes Badge */}
         {hasPendingChanges && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className="bg-orange-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md flex items-center gap-1 backdrop-blur-sm">
+            <span className="bg-orange-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg-md flex items-center gap-1 backdrop-blur-sm">
               ⏳ Pending Changes
             </span>
           </div>
@@ -132,22 +132,22 @@ const PropertyCard = ({ property }) => {
       {/* Content Section */}
       <div className="p-5">
         <div className="flex items-start justify-between">
-          <h3 className="font-bold text-lg text-gray-800 line-clamp-1 group-hover:text-emerald-600 transition-colors">
+          <h3 className="font-bold text-lg text-[var(--color-text)] line-clamp-1 group-hover:text-emerald-600 transition-colors">
             {property.title}
           </h3>
         </div>
         
-        <div className="flex items-center gap-1 mt-1 text-gray-500 text-sm">
+        <div className="flex items-center gap-1 mt-1 text-[var(--color-text-muted)] text-sm">
           <span>📍</span>
           <span className="line-clamp-1">{property.location_city}</span>
         </div>
 
         <div className="mt-3 flex items-baseline gap-1">
-          <span className="text-2xl font-bold" style={{ color: '#1E3A5F' }}>₹{property.price?.toLocaleString()}</span>
-          <span className="text-xs text-gray-400">total</span>
+          <span className="text-2xl font-bold text-[var(--color-primary)]">₹{property.price?.toLocaleString()}</span>
+          <span className="text-xs text-[var(--color-text-muted)]">total</span>
         </div>
 
-        <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+        <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
           <span>📐 {property.land_size_sqft} sq ft</span>
           {property.per_sqft_price > 0 && (
             <span className="text-emerald-600">₹{property.per_sqft_price}/sqft</span>
@@ -156,10 +156,7 @@ const PropertyCard = ({ property }) => {
 
         <Link 
           to={`/property/${property.id}`} 
-          className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border group-hover:shadow-md"
-          style={{ backgroundColor: '#F9F7F5', color: '#1E3A5F', borderColor: '#E8DCC6' }}
-          onMouseEnter={(e) => { e.target.style.backgroundColor = '#1E3A5F'; e.target.style.color = 'white'; e.target.style.borderColor = '#1E3A5F' }}
-          onMouseLeave={(e) => { e.target.style.backgroundColor = '#F9F7F5'; e.target.style.color = '#1E3A5F'; e.target.style.borderColor = '#E8DCC6' }}
+          className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border group-hover:shadow-md btn-secondary"
         >
           View Details
           <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>

@@ -327,13 +327,13 @@ const AddProperty = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6" style={{ color: '#1E3A5F' }}>Add New Property</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-primary)' }}>Add New Property</h1>
       
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-md border border-[var(--color-border)] p-6">
         <form onSubmit={handleSubmit}>
           {/* Basic Information */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Basic Information</h2>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Basic Information</h2>
             <div className="space-y-4">
               <div>
                 <label className="input-label">Property Title *</label>
@@ -354,8 +354,8 @@ const AddProperty = () => {
           </div>
 
           {/* Land Dimensions */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Land Dimensions</h2>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Land Dimensions</h2>
             <div className="mb-4">
               <label className="input-label">Dimension Type</label>
               <div className="flex gap-4 mt-1">
@@ -392,12 +392,12 @@ const AddProperty = () => {
           </div>
 
           {/* Price Details */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Price Details</h2>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Price Details</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="input-label">Land Size (sq ft)</label>
-                <input type="text" name="land_size_sqft" value={formData.land_size_sqft} readOnly className="input bg-gray-50" />
+                <input type="text" name="land_size_sqft" value={formData.land_size_sqft} readOnly className="input bg-[var(--color-bg)]" />
               </div>
               <div>
                 <label className="input-label">Per Sqft Price (₹) *</label>
@@ -405,14 +405,14 @@ const AddProperty = () => {
               </div>
               <div>
                 <label className="input-label">Total Price (₹)</label>
-                <input type="text" name="price" value={formData.price} readOnly className="input bg-gray-50" />
+                <input type="text" name="price" value={formData.price} readOnly className="input bg-[var(--color-bg)]" />
               </div>
             </div>
           </div>
 
           {/* Location */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Location</h2>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Location</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="input-label">City *</label>
@@ -426,12 +426,12 @@ const AddProperty = () => {
           </div>
 
           {/* Images Upload */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Images * (Minimum 1)</h2>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Images * (Minimum 1)</h2>
             <div className="mb-4">
               <label className="input-label">Select Images (JPG, PNG, GIF, WEBP)</label>
               <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="w-full border rounded-xl px-4 py-2.5" />
-              <p className="text-xs text-gray-400 mt-1">At least one image is required</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">At least one image is required</p>
             </div>
             
             {imagePreviews.length > 0 && (
@@ -450,9 +450,9 @@ const AddProperty = () => {
           </div>
 
           {/* Structured Documents Upload - Horizontal Scroll */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold mb-4" style={{ color: '#1E3A5F' }}>Property Documents *</h2>
-            <p className="text-sm text-gray-500 mb-3">Click on any card to upload the document</p>
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-primary)' }}>Property Documents *</h2>
+            <p className="text-sm text-[var(--color-text-muted)] mb-3">Click on any card to upload the document</p>
             
             {/* Hidden file inputs */}
             {documentTypes.map(doc => (
@@ -483,19 +483,19 @@ const AddProperty = () => {
                     <div
                       key={doc.key}
                       onClick={() => handleCardClick(doc.key)}
-                      className="w-40 h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                      className="w-40 h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-lg-lg hover:scale-105"
                       style={{ borderColor: '#3B82F6', backgroundColor: isUploaded ? '#EFF6FF' : 'white' }}
                     >
                       {isUploaded ? (
                         <>
                           <div className="text-4xl mb-2 text-green-500">✅</div>
                           <p className="text-xs text-center px-2 text-green-600 font-medium">{fileName.substring(0, 20)}</p>
-                          <p className="text-xs text-gray-400 mt-1">Uploaded</p>
+                          <p className="text-xs text-[var(--color-text-muted)] mt-1">Uploaded</p>
                         </>
                       ) : (
                         <>
                           <div className="text-4xl mb-2 text-blue-500">➕</div>
-                          <p className="text-sm font-medium text-center px-2" style={{ color: '#1E3A5F' }}>{doc.label}</p>
+                          <p className="text-sm font-medium text-center px-2" style={{ color: 'var(--color-primary)' }}>{doc.label}</p>
                           {doc.compulsory && <span className="text-xs text-red-500 mt-1">* Required</span>}
                         </>
                       )}
@@ -507,12 +507,12 @@ const AddProperty = () => {
             
             {/* Other Documents list */}
             {documents.other_documents.files.length > 0 && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2">Other Documents Uploaded:</p>
+              <div className="mt-4 p-3 bg-[var(--color-bg)] rounded-lg">
+                <p className="text-sm font-medium text-[var(--color-text)] mb-2">Other Documents Uploaded:</p>
                 <div className="space-y-1">
                   {documents.other_documents.names.map((name, idx) => (
                     <div key={idx} className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">📄 {name}</span>
+                      <span className="text-[var(--color-text-muted)]">📄 {name}</span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -529,7 +529,7 @@ const AddProperty = () => {
               </div>
             )}
             
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-[var(--color-text-muted)] mt-3">
               * Required documents: E-Khata, B-Khata, Sale Deed, Tax Receipt, Encumbrance Certificate, Property Card
             </p>
           </div>

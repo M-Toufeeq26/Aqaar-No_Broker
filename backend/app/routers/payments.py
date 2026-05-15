@@ -4,14 +4,23 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
-from app.utils.auth import get_current_user, get_current_admin
+from app.utils.auth import get_current_user
 from datetime import datetime, timedelta
-import uuid
 import json
+import razorpay
+import hmac
+import hashlib
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
-# Sponsorship Pricing (Final)
+# Razorpay Test Keys
+RAZORPAY_KEY_ID = "rzp_test_ShSRMSRNfnH1Ai"
+RAZORPAY_KEY_SECRET = "gyEiMkHHrU9KGJrJR03v4JBL"
+
+# Initialize Razorpay client
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+# Sponsorship Pricing
 SPONSORED_PRICES = {
     7: 699,    # 7 days - ₹699
     15: 1299,  # 15 days - ₹1299
@@ -36,27 +45,31 @@ class VerifyPaymentRequest(BaseModel):
     payment_id: str
     signature: str
 
+@router.get("/sponsored-prices")
+def get_sponsored_prices():
+    return SPONSORED_PRICES
+
+@router.get("/property-verification-prices")
+def get_property_verification_prices():
+    return PROPERTY_VERIFICATION_PRICES
+
 @router.post("/create-order")
 def create_order(
     request: CreateOrderRequest,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    order_id = str(uuid.uuid4())
-    
-    if request.payment_type not in ["verification", "sponsored", "property_verification"]:
+    # Validate payment type
+    if request.payment_type not in ["property_verification", "sponsored"]:
         raise HTTPException(status_code=400, detail="Invalid payment type")
     
-    # User verification (profile)
-    if request.payment_type == "verification" and request.amount != 999:
-        raise HTTPException(status_code=400, detail="Verification fee is ₹999")
-    
-    # Property verification
+    # Validate property verification
     if request.payment_type == "property_verification":
         if request.duration_days not in PROPERTY_VERIFICATION_PRICES:
             raise HTTPException(status_code=400, detail="Invalid duration for property verification")
-        if request.amount != PROPERTY_VERIFICATION_PRICES[request.duration_days]:
-            raise HTTPException(status_code=400, detail=f"Invalid amount. Expected ₹{PROPERTY_VERIFICATION_PRICES[request.duration_days]}")
+        expected_amount = PROPERTY_VERIFICATION_PRICES[request.duration_days]
+        if request.amount != expected_amount:
+            raise HTTPException(status_code=400, detail=f"Invalid amount. Expected ₹{expected_amount}")
         if not request.property_id:
             raise HTTPException(status_code=400, detail="Property ID required for property verification")
         
@@ -66,12 +79,13 @@ def create_order(
         if property.owner_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not authorized to verify this property")
     
-    # Sponsorship
+    # Validate sponsorship
     if request.payment_type == "sponsored":
         if request.duration_days not in SPONSORED_PRICES:
             raise HTTPException(status_code=400, detail="Invalid duration for sponsorship")
-        if request.amount != SPONSORED_PRICES[request.duration_days]:
-            raise HTTPException(status_code=400, detail=f"Invalid amount. Expected ₹{SPONSORED_PRICES[request.duration_days]}")
+        expected_amount = SPONSORED_PRICES[request.duration_days]
+        if request.amount != expected_amount:
+            raise HTTPException(status_code=400, detail=f"Invalid amount. Expected ₹{expected_amount}")
         if not request.property_id:
             raise HTTPException(status_code=400, detail="Property ID required for sponsored listing")
         
@@ -81,33 +95,57 @@ def create_order(
         if property.owner_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not authorized to sponsor this property")
     
-    payment = models.Payment(
-        user_id=current_user.id,
-        payment_type=request.payment_type,
-        amount=request.amount,
-        razorpay_order_id=order_id,
-        status="pending"
-    )
+    # Create actual Razorpay order (amount in paise)
+    amount_in_paise = int(request.amount * 100)
     
-    metadata = {
-        "payment_type": request.payment_type,
-        "amount": request.amount
+    order_data = {
+        'amount': amount_in_paise,
+        'currency': 'INR',
+        'payment_capture': 1,
+        'notes': {
+            'payment_type': request.payment_type,
+            'property_id': str(request.property_id) if request.property_id else '',
+            'user_id': str(current_user.id),
+            'duration_days': str(request.duration_days) if request.duration_days else ''
+        }
     }
     
-    if request.property_id:
-        metadata["property_id"] = request.property_id
-    if request.duration_days:
-        metadata["duration_days"] = request.duration_days
-    
-    payment.metadata_json = json.dumps(metadata)
-    db.add(payment)
-    db.commit()
-    
-    return {
-        "order_id": order_id,
-        "amount": request.amount,
-        "payment_type": request.payment_type
-    }
+    try:
+        razorpay_order = client.order.create(order_data)
+        order_id = razorpay_order['id']
+        
+        # Store payment record in database
+        payment = models.Payment(
+            user_id=current_user.id,
+            payment_type=request.payment_type,
+            amount=request.amount,
+            razorpay_order_id=order_id,
+            status="pending",
+            created_at=datetime.utcnow()
+        )
+        
+        metadata = {
+            "payment_type": request.payment_type,
+            "amount": request.amount
+        }
+        
+        if request.property_id:
+            metadata["property_id"] = request.property_id
+        if request.duration_days:
+            metadata["duration_days"] = request.duration_days
+        
+        payment.metadata_json = json.dumps(metadata)
+        db.add(payment)
+        db.commit()
+        
+        return {
+            "order_id": order_id,
+            "amount": request.amount,
+            "currency": "INR"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create Razorpay order: {str(e)}")
 
 @router.post("/verify")
 def verify_payment(
@@ -115,43 +153,38 @@ def verify_payment(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    payment = db.query(models.Payment).filter(models.Payment.razorpay_order_id == request.order_id).first()
+    # Verify Razorpay signature
+    generated_signature = hmac.new(
+        RAZORPAY_KEY_SECRET.encode('utf-8'),
+        f"{request.order_id}|{request.payment_id}".encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    if generated_signature != request.signature:
+        raise HTTPException(status_code=400, detail="Invalid payment signature")
+    
+    # Find payment record
+    payment = db.query(models.Payment).filter(
+        models.Payment.razorpay_order_id == request.order_id
+    ).first()
+    
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
     
     if payment.status == "completed":
         raise HTTPException(status_code=400, detail="Payment already verified")
     
+    # Update payment status
+    payment.status = "completed"
     payment.razorpay_payment_id = request.payment_id
     payment.razorpay_signature = request.signature
-    payment.status = "completed"
     payment.completed_at = datetime.utcnow()
     db.commit()
     
     metadata = json.loads(payment.metadata_json) if payment.metadata_json else {}
     
-    # User Verification (Profile)
-    if payment.payment_type == "verification":
-        user = db.query(models.User).filter(models.User.id == current_user.id).first()
-        if user:
-            user.is_verified = True
-            db.commit()
-            
-            notification = models.Notification(
-                user_id=current_user.id,
-                title="Verification Successful",
-                message="Your account has been verified. You now have a verified badge on your profile.",
-                type="verification_completed",
-                related_id=None,
-                is_read=False
-            )
-            db.add(notification)
-            db.commit()
-        
-        return {"message": "Verification successful", "is_verified": True}
-    
     # Property Verification
-    elif payment.payment_type == "property_verification":
+    if payment.payment_type == "property_verification":
         property_id = metadata.get("property_id")
         duration_days = metadata.get("duration_days")
         
@@ -162,17 +195,30 @@ def verify_payment(
         if not property:
             raise HTTPException(status_code=404, detail="Property not found")
         
-        # Create verification request for admin approval
-        verification_request = models.PropertyVerificationRequest(
-            property_id=property_id,
-            user_id=current_user.id,
-            duration_days=duration_days,
-            amount=payment.amount,
-            status="pending",
-            remaining_attempts=3,
-            created_at=datetime.utcnow()
-        )
-        db.add(verification_request)
+        # Check if there's already a pending/rejected request
+        existing_request = db.query(models.PropertyVerificationRequest).filter(
+            models.PropertyVerificationRequest.property_id == property_id,
+            models.PropertyVerificationRequest.status == "pending"
+        ).first()
+        
+        if existing_request:
+            # Update existing request
+            existing_request.duration_days = duration_days
+            existing_request.amount = payment.amount
+            existing_request.created_at = datetime.utcnow()
+        else:
+            # Create new verification request
+            verification_request = models.PropertyVerificationRequest(
+                property_id=property_id,
+                user_id=current_user.id,
+                duration_days=duration_days,
+                amount=payment.amount,
+                status="pending",
+                remaining_attempts=3,
+                created_at=datetime.utcnow()
+            )
+            db.add(verification_request)
+        
         db.commit()
         
         # Notify admins
@@ -183,26 +229,28 @@ def verify_payment(
                 title="New Property Verification Request",
                 message=f"Property '{property.title}' has requested verification.",
                 type="new_verification_request",
-                related_id=verification_request.id,
-                is_read=False
+                related_id=verification_request.id if 'verification_request' in locals() else None,
+                is_read=False,
+                created_at=datetime.utcnow()
             )
             db.add(admin_notif)
-        db.commit()
         
+        # Notify user
         notification = models.Notification(
             user_id=current_user.id,
             title="Verification Request Submitted",
             message=f"Your verification request for '{property.title}' has been submitted. Admin will review within 2-3 days.",
             type="verification_request_submitted",
-            related_id=verification_request.id,
-            is_read=False
+            related_id=verification_request.id if 'verification_request' in locals() else None,
+            is_read=False,
+            created_at=datetime.utcnow()
         )
         db.add(notification)
         db.commit()
         
         return {
-            "message": "Verification request submitted for admin approval",
-            "request_id": verification_request.id
+            "status": "success",
+            "message": "Verification request submitted for admin approval"
         }
     
     # Sponsorship
@@ -217,8 +265,19 @@ def verify_payment(
         if not property:
             raise HTTPException(status_code=404, detail="Property not found")
         
-        # Check if SponsorshipRequest model exists
-        try:
+        # Check if there's already a pending request
+        existing_request = db.query(models.SponsorshipRequest).filter(
+            models.SponsorshipRequest.property_id == property_id,
+            models.SponsorshipRequest.status == "pending"
+        ).first()
+        
+        if existing_request:
+            existing_request.duration_days = duration_days
+            existing_request.amount = payment.amount
+            existing_request.created_at = datetime.utcnow()
+            request_id = existing_request.id
+        else:
+            # Create new sponsorship request
             sponsorship_request = models.SponsorshipRequest(
                 property_id=property_id,
                 user_id=current_user.id,
@@ -229,14 +288,7 @@ def verify_payment(
             )
             db.add(sponsorship_request)
             db.commit()
-            
             request_id = sponsorship_request.id
-        except Exception as e:
-            db.rollback()
-            return {
-                "message": "Payment successful but sponsorship request could not be created. Please contact support.",
-                "payment_verified": True
-            }
         
         # Notify admins
         admins = db.query(models.User).filter(models.User.is_admin == True).all()
@@ -247,28 +299,30 @@ def verify_payment(
                 message=f"Property '{property.title}' has requested sponsorship for {duration_days} days.",
                 type="new_sponsorship_request",
                 related_id=request_id,
-                is_read=False
+                is_read=False,
+                created_at=datetime.utcnow()
             )
             db.add(admin_notif)
-        db.commit()
         
+        # Notify user
         notification = models.Notification(
             user_id=current_user.id,
             title="Sponsorship Request Submitted",
             message=f"Your sponsorship request for '{property.title}' has been submitted. Admin will review within 2-3 days.",
             type="sponsorship_request_submitted",
             related_id=request_id,
-            is_read=False
+            is_read=False,
+            created_at=datetime.utcnow()
         )
         db.add(notification)
         db.commit()
         
         return {
-            "message": "Sponsorship request submitted for admin approval",
-            "request_id": request_id
+            "status": "success",
+            "message": "Sponsorship request submitted for admin approval"
         }
     
-    return {"message": "Payment verified successfully"}
+    return {"status": "success", "message": "Payment verified successfully"}
 
 @router.get("/history")
 def get_payment_history(
@@ -293,11 +347,3 @@ def get_payment_history(
         })
     
     return result
-
-@router.get("/sponsored-prices")
-def get_sponsored_prices():
-    return SPONSORED_PRICES
-
-@router.get("/property-verification-prices")
-def get_property_verification_prices():
-    return PROPERTY_VERIFICATION_PRICES

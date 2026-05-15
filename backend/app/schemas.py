@@ -47,6 +47,7 @@ class UserResponse(BaseModel):
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
+    current_password: Optional[str] = None
     password: Optional[str] = None
 
 class PropertyCreate(BaseModel):

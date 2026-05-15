@@ -84,24 +84,24 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Total Listings</p>
-          <p className="text-2xl font-bold text-gray-800">{myListings.length}</p>
+        <div className="bg-[var(--color-surface)] rounded-xl p-4 shadow-lg-md border border-[var(--color-border)]">
+          <p className="text-[var(--color-text-muted)] text-sm">Total Listings</p>
+          <p className="text-2xl font-bold text-[var(--color-text)]">{myListings.length}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Pending Interests</p>
-          <p className="text-2xl font-bold text-gray-800">{pendingInterests.length}</p>
+        <div className="bg-[var(--color-surface)] rounded-xl p-4 shadow-lg-md border border-[var(--color-border)]">
+          <p className="text-[var(--color-text-muted)] text-sm">Pending Interests</p>
+          <p className="text-2xl font-bold text-[var(--color-text)]">{pendingInterests.length}</p>
         </div>
       </div>
 
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-[var(--color-border)] mb-6">
         <nav className="flex gap-6">
           <button
             onClick={() => setActiveTab('listings')}
             className={`pb-3 px-1 font-medium transition-all ${
               activeTab === 'listings'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
             }`}
           >
             My Listings ({myListings.length})
@@ -111,7 +111,7 @@ const Dashboard = () => {
             className={`pb-3 px-1 font-medium transition-all ${
               activeTab === 'interests'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
             }`}
           >
             Pending Interests ({pendingInterests.length})
@@ -122,8 +122,8 @@ const Dashboard = () => {
       {activeTab === 'listings' && (
         <div>
           {myListings.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-              <p className="text-gray-500 text-lg mb-4">You haven't listed any properties yet.</p>
+            <div className="bg-[var(--color-surface)] rounded-2xl p-12 text-center border border-[var(--color-border)]">
+              <p className="text-[var(--color-text-muted)] text-lg mb-4">You haven't listed any properties yet.</p>
               <Link to="/add-property" className="btn-primary inline-block">
                 List Your First Property
               </Link>
@@ -131,11 +131,11 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-4">
               {myListings.map((property) => (
-                <div key={property.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <div key={property.id} className="bg-[var(--color-surface)] rounded-xl shadow-lg-md border border-[var(--color-border)] p-4">
                   <div className="flex flex-wrap justify-between items-start gap-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-lg truncate">{property.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">₹{property.price?.toLocaleString()} • {property.location_city}</p>
+                      <h3 className="font-semibold text-[var(--color-text)] text-lg truncate">{property.title}</h3>
+                      <p className="text-[var(--color-text-muted)] text-sm mt-1">₹{property.price?.toLocaleString()} • {property.location_city}</p>
                       <div className="flex gap-2 mt-2">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           property.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -159,7 +159,7 @@ const Dashboard = () => {
                       </button>
                       <Link
                         to={`/property/${property.id}`}
-                        className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-200 transition"
+                        className="bg-[var(--color-secondary)] text-[var(--color-text)] px-4 py-1.5 rounded-lg text-sm hover:bg-gray-200 transition"
                       >
                         View
                       </Link>
@@ -175,21 +175,21 @@ const Dashboard = () => {
       {activeTab === 'interests' && (
         <div>
           {pendingInterests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-              <p className="text-gray-500 text-lg">No pending interest requests.</p>
-              <p className="text-sm text-gray-400 mt-2">When buyers show interest, you'll see them here.</p>
+            <div className="bg-[var(--color-surface)] rounded-2xl p-12 text-center border border-[var(--color-border)]">
+              <p className="text-[var(--color-text-muted)] text-lg">No pending interest requests.</p>
+              <p className="text-sm text-[var(--color-text-muted)] mt-2">When buyers show interest, you'll see them here.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {pendingInterests.map((interest) => (
-                <div key={interest.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <div key={interest.id} className="bg-[var(--color-surface)] rounded-xl shadow-lg-md border border-[var(--color-border)] p-4">
                   <div className="flex flex-wrap justify-between items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800">{interest.property_title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
+                      <h3 className="font-semibold text-[var(--color-text)]">{interest.property_title}</h3>
+                      <p className="text-[var(--color-text-muted)] text-sm mt-1">
                         Interested by: <span className="font-medium">{interest.buyer_name}</span>
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-[var(--color-text-muted)] mt-1">
                         Requested on: {new Date(interest.created_at).toLocaleDateString()}
                       </p>
                     </div>

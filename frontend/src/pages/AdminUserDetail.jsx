@@ -88,7 +88,7 @@ const AdminUserDetail = () => {
     return (
       <div className="text-center py-20">
         <div className="text-6xl mb-4">⛔</div>
-        <p className="text-gray-500 text-lg">Access denied. Admin only.</p>
+        <p className="text-[var(--color-text-muted)] text-lg">Access denied. Admin only.</p>
       </div>
     )
   }
@@ -104,7 +104,7 @@ const AdminUserDetail = () => {
   if (!userDetail) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500 text-lg">User not found</p>
+        <p className="text-[var(--color-text-muted)] text-lg">User not found</p>
         <button onClick={() => navigate('/admin')} className="btn-primary mt-4">Back to Admin</button>
       </div>
     )
@@ -118,12 +118,12 @@ const AdminUserDetail = () => {
       <div className="w-64 bg-gray-800 border-r border-gray-700 fixed left-0 top-0 h-full overflow-y-auto">
         <div className="p-6 border-b border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg-md">
               <span className="text-white font-bold text-lg">A</span>
             </div>
             <div>
               <span className="text-xl font-bold text-white">Aqaar</span>
-              <p className="text-xs text-gray-400">Admin Panel</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Admin Panel</p>
             </div>
           </div>
         </div>
@@ -163,14 +163,14 @@ const AdminUserDetail = () => {
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow">
+              <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-lg">
                 {userDetail.full_name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">{userDetail.full_name}</h2>
-                <p className="text-gray-400">{userDetail.email}</p>
-                <p className="text-gray-400 text-sm mt-1">Phone: {userDetail.phone}</p>
-                <p className="text-gray-500 text-sm mt-1">Joined: {new Date(userDetail.created_at).toLocaleDateString()}</p>
+                <p className="text-[var(--color-text-muted)]">{userDetail.email}</p>
+                <p className="text-[var(--color-text-muted)] text-sm mt-1">Phone: {userDetail.phone}</p>
+                <p className="text-[var(--color-text-muted)] text-sm mt-1">Joined: {new Date(userDetail.created_at).toLocaleDateString()}</p>
                 {userDetail.avg_rating > 0 && (
                   <p className="text-yellow-400 text-sm mt-1">⭐ Rating: {userDetail.avg_rating}</p>
                 )}
@@ -206,7 +206,7 @@ const AdminUserDetail = () => {
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
           <h3 className="text-lg font-semibold text-white mb-4">Properties Listed ({properties.length})</h3>
           {properties.length === 0 ? (
-            <p className="text-gray-400">No properties listed by this user.</p>
+            <p className="text-[var(--color-text-muted)]">No properties listed by this user.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -239,7 +239,7 @@ const AdminUserDetail = () => {
                         {prop.is_verified ? (
                           <span className="text-green-400">✅ Verified</span>
                         ) : (
-                          <span className="text-gray-500">—</span>
+                          <span className="text-[var(--color-text-muted)]">—</span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-sm">
@@ -262,16 +262,16 @@ const AdminUserDetail = () => {
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
           <h3 className="text-lg font-semibold text-white mb-4">Interests ({interests.length})</h3>
           {interests.length === 0 ? (
-            <p className="text-gray-400">No interests marked by this user.</p>
+            <p className="text-[var(--color-text-muted)]">No interests marked by this user.</p>
           ) : (
             <div className="space-y-2">
               {interests.map((interest) => (
                 <div key={interest.id} className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
                   <div>
                     <p className="text-white font-medium">{interest.property_title}</p>
-                    <p className="text-xs text-gray-400">Status: {interest.status}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Status: {interest.status}</p>
                   </div>
-                  <span className="text-xs text-gray-400">{new Date(interest.created_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-[var(--color-text-muted)]">{new Date(interest.created_at).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>
@@ -282,7 +282,7 @@ const AdminUserDetail = () => {
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Payment History ({payments.length})</h3>
           {payments.length === 0 ? (
-            <p className="text-gray-400">No payment history.</p>
+            <p className="text-[var(--color-text-muted)]">No payment history.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -321,7 +321,7 @@ const AdminUserDetail = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
             <h2 className="text-xl font-bold text-white mb-4">Block User</h2>
-            <p className="text-gray-400 mb-4">Blocking: <span className="text-white font-medium">{userDetail.full_name}</span></p>
+            <p className="text-[var(--color-text-muted)] mb-4">Blocking: <span className="text-white font-medium">{userDetail.full_name}</span></p>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-1">Block Duration</label>

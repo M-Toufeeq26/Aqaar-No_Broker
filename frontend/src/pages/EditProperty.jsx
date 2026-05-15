@@ -435,10 +435,10 @@ const EditProperty = () => {
         </div>
       )}
       
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-[var(--color-surface)] rounded-2xl shadow-lg-md border border-[var(--color-border)] p-6">
         <form onSubmit={handleSubmit}>
           {/* Basic Information - Always editable */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
             <div className="space-y-4">
               <div>
@@ -468,7 +468,7 @@ const EditProperty = () => {
           </div>
 
           {/* Land Dimensions - Locked if verified */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Land Dimensions</h2>
             {isVerified && (
               <div className="mb-3 p-2 bg-yellow-50 rounded-lg text-xs text-yellow-700">
@@ -480,11 +480,11 @@ const EditProperty = () => {
               <div className="flex gap-4 mt-1">
                 <label className="flex items-center gap-2">
                   <input type="radio" checked={dimensionType === 'equal'} onChange={() => handleDimensionTypeChange('equal')} disabled={isVerified} />
-                  <span className={isVerified ? 'text-gray-400' : ''}>Equal Opposite Sides (Rectangle)</span>
+                  <span className={isVerified ? 'text-[var(--color-text-muted)]' : ''}>Equal Opposite Sides (Rectangle)</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="radio" checked={dimensionType === 'unequal'} onChange={() => handleDimensionTypeChange('unequal')} disabled={isVerified} />
-                  <span className={isVerified ? 'text-gray-400' : ''}>Unequal Opposite Sides (Irregular)</span>
+                  <span className={isVerified ? 'text-[var(--color-text-muted)]' : ''}>Unequal Opposite Sides (Irregular)</span>
                 </label>
               </div>
             </div>
@@ -499,7 +499,7 @@ const EditProperty = () => {
                     value={formData.dimensions_width} 
                     onChange={handleChange} 
                     onBlur={calculateLandSize} 
-                    className={`input ${isFieldLocked('dimensions_width') ? 'bg-gray-100' : ''}`}
+                    className={`input ${isFieldLocked('dimensions_width') ? 'bg-[var(--color-secondary)]' : ''}`}
                     disabled={isFieldLocked('dimensions_width')}
                   />
                 </div>
@@ -511,28 +511,28 @@ const EditProperty = () => {
                     value={formData.dimensions_height} 
                     onChange={handleChange} 
                     onBlur={calculateLandSize} 
-                    className={`input ${isFieldLocked('dimensions_height') ? 'bg-gray-100' : ''}`}
+                    className={`input ${isFieldLocked('dimensions_height') ? 'bg-[var(--color-secondary)]' : ''}`}
                     disabled={isFieldLocked('dimensions_height')}
                   />
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="input-label">North Side (ft) *</label><input type="number" name="north" value={formData.north} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('north') ? 'bg-gray-100' : ''}`} disabled={isFieldLocked('north')} /></div>
-                <div><label className="input-label">South Side (ft) *</label><input type="number" name="south" value={formData.south} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('south') ? 'bg-gray-100' : ''}`} disabled={isFieldLocked('south')} /></div>
-                <div><label className="input-label">East Side (ft) *</label><input type="number" name="east" value={formData.east} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('east') ? 'bg-gray-100' : ''}`} disabled={isFieldLocked('east')} /></div>
-                <div><label className="input-label">West Side (ft) *</label><input type="number" name="west" value={formData.west} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('west') ? 'bg-gray-100' : ''}`} disabled={isFieldLocked('west')} /></div>
+                <div><label className="input-label">North Side (ft) *</label><input type="number" name="north" value={formData.north} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('north') ? 'bg-[var(--color-secondary)]' : ''}`} disabled={isFieldLocked('north')} /></div>
+                <div><label className="input-label">South Side (ft) *</label><input type="number" name="south" value={formData.south} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('south') ? 'bg-[var(--color-secondary)]' : ''}`} disabled={isFieldLocked('south')} /></div>
+                <div><label className="input-label">East Side (ft) *</label><input type="number" name="east" value={formData.east} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('east') ? 'bg-[var(--color-secondary)]' : ''}`} disabled={isFieldLocked('east')} /></div>
+                <div><label className="input-label">West Side (ft) *</label><input type="number" name="west" value={formData.west} onChange={handleChange} onBlur={calculateLandSize} className={`input ${isFieldLocked('west') ? 'bg-[var(--color-secondary)]' : ''}`} disabled={isFieldLocked('west')} /></div>
               </div>
             )}
           </div>
 
           {/* Price Details - Always editable */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Price Details</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="input-label">Land Size (sq ft)</label>
-                <input type="text" name="land_size_sqft" value={formData.land_size_sqft} readOnly className="input bg-gray-50" />
+                <input type="text" name="land_size_sqft" value={formData.land_size_sqft} readOnly className="input bg-[var(--color-bg)]" />
               </div>
               <div>
                 <label className="input-label">Per Sqft Price (₹) *</label>
@@ -540,13 +540,13 @@ const EditProperty = () => {
               </div>
               <div>
                 <label className="input-label">Total Price (₹)</label>
-                <input type="text" name="price" value={formData.price} readOnly className="input bg-gray-50" />
+                <input type="text" name="price" value={formData.price} readOnly className="input bg-[var(--color-bg)]" />
               </div>
             </div>
           </div>
 
           {/* Location - Locked if verified */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Location</h2>
             {isVerified && (
               <div className="mb-3 p-2 bg-yellow-50 rounded-lg text-xs text-yellow-700">
@@ -566,7 +566,7 @@ const EditProperty = () => {
                   value={formData.location_address} 
                   onChange={handleChange} 
                   required 
-                  className={`input ${isFieldLocked('location_address') ? 'bg-gray-100' : ''}`}
+                  className={`input ${isFieldLocked('location_address') ? 'bg-[var(--color-secondary)]' : ''}`}
                   disabled={isFieldLocked('location_address')}
                 />
               </div>
@@ -574,7 +574,7 @@ const EditProperty = () => {
           </div>
 
           {/* Images */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Images</h2>
             {isVerified && (
               <div className="mb-3 p-2 bg-yellow-50 rounded-lg text-xs text-yellow-700">
@@ -617,7 +617,7 @@ const EditProperty = () => {
           </div>
 
           {/* Documents */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-[var(--color-border)]">
             <h2 className="text-lg font-semibold mb-4">Documents (PDF)</h2>
             {isVerified && (
               <div className="mb-3 p-2 bg-yellow-50 rounded-lg text-xs text-yellow-700">
@@ -627,7 +627,7 @@ const EditProperty = () => {
             {documents.length > 0 && (
               <div className="space-y-2 mb-4">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <div key={doc.id} className="flex justify-between items-center p-2 bg-[var(--color-bg)] rounded-lg">
                     <span>📄 {doc.original_filename}</span>
                     <button type="button" onClick={() => deleteExistingDocument(doc.id)} className="text-red-500">Delete</button>
                   </div>
@@ -643,7 +643,7 @@ const EditProperty = () => {
                 <h3 className="font-medium">New Documents ({docPreviews.length})</h3>
                 <div className="space-y-2 mt-2">
                   {docPreviews.map((name, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex justify-between items-center p-2 bg-[var(--color-bg)] rounded-lg">
                       <span>📄 {name}</span>
                       <button type="button" onClick={() => removeDoc(index)} className="text-red-500">Remove</button>
                     </div>
@@ -665,12 +665,12 @@ const EditProperty = () => {
       {/* Change Request Modal */}
       {showChangeRequestModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+          <div className="bg-[var(--color-surface)] rounded-2xl p-6 max-w-md w-full mx-4">
             <h2 className="text-xl font-bold mb-4">Submit Changes for Approval</h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-[var(--color-text-muted)] text-sm mb-4">
               This property is verified. The following changes require admin approval:
             </p>
-            <ul className="list-disc list-inside mb-4 text-sm text-gray-600">
+            <ul className="list-disc list-inside mb-4 text-sm text-[var(--color-text-muted)]">
               {changeRequestData.dimensions && <li>Land dimensions changed</li>}
               {changeRequestData.location && <li>Location changed</li>}
               {changeRequestData.images && changeRequestData.images.length > 0 && <li>{changeRequestData.images.length} new image(s) added</li>}
